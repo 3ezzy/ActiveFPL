@@ -8,6 +8,36 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 
 const PAGE_SIZE = 25;
 const posLabels = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' };
+const PL_BADGE_URL = 'https://resources.premierleague.com/premierleague/badges/70';
+
+/* ─── Reusable: Team Badge ─── */
+function TeamBadge({ team, size = 20 }) {
+  if (!team) return <div className="rounded-full bg-fpl-border shrink-0" style={{ width: size, height: size }} />;
+  return (
+    <img
+      src={`${PL_BADGE_URL}/t${team.code}.png`}
+      alt={team.short_name}
+      className="object-contain shrink-0"
+      style={{ width: size, height: size }}
+      onError={(e) => { e.target.style.display = 'none'; }}
+    />
+  );
+}
+
+/* ─── Reusable: Player Jersey ─── */
+function PlayerJersey({ team, isGkp, size = 24 }) {
+  if (!team) return null;
+  const shirtType = isGkp ? `shirt_${team.code}_1` : `shirt_${team.code}`;
+  return (
+    <img
+      src={`https://fantasy.premierleague.com/dist/img/shirts/standard/${shirtType}-110.webp`}
+      alt={team.short_name}
+      className="object-contain shrink-0"
+      style={{ width: size, height: size * 1.2 }}
+      onError={(e) => { e.target.style.display = 'none'; }}
+    />
+  );
+}
 
 export default function PlayersPage() {
   const { players, teams, teamsMap, elementTypes, loading, error } = useBootstrap();
@@ -88,40 +118,53 @@ export default function PlayersPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-fpl-card border border-fpl-border rounded-lg overflow-hidden">
+      <div className="bg-fpl-card border border-fpl-border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-gray-400 text-left border-b border-fpl-border">
-                <th className="px-4 py-2">Player</th>
-                <th className="px-4 py-2">Team</th>
-                <th className="px-4 py-2">Pos</th>
-                <th className="px-4 py-2 text-right">Price</th>
-                <th className="px-4 py-2 text-right">Form</th>
-                <th className="px-4 py-2 text-right">Pts</th>
-                <th className="px-4 py-2 text-right">Goals</th>
-                <th className="px-4 py-2 text-right">Assists</th>
-                <th className="px-4 py-2 text-right">ICT</th>
+              <tr className="text-gray-400 text-left border-b border-fpl-border text-xs uppercase tracking-wider">
+                <th className="px-4 py-2.5">Player</th>
+                <th className="px-4 py-2.5">Team</th>
+                <th className="px-4 py-2.5">Pos</th>
+                <th className="px-4 py-2.5 text-right">Price</th>
+                <th className="px-4 py-2.5 text-right">Form</th>
+                <th className="px-4 py-2.5 text-right">Pts</th>
+                <th className="px-4 py-2.5 text-right">Goals</th>
+                <th className="px-4 py-2.5 text-right">Assists</th>
+                <th className="px-4 py-2.5 text-right">ICT</th>
               </tr>
             </thead>
             <tbody>
-              {pageData.map((p) => (
-                <tr
-                  key={p.id}
-                  className="border-b border-fpl-border/50 hover:bg-white/5 cursor-pointer transition-colors"
-                  onClick={() => setSelectedPlayer(p.id)}
-                >
-                  <td className="px-4 py-2 text-white font-medium">{p.web_name}</td>
-                  <td className="px-4 py-2 text-gray-400">{teamsMap?.[p.team]?.short_name}</td>
-                  <td className="px-4 py-2 text-gray-400">{posLabels[p.element_type]}</td>
-                  <td className="px-4 py-2 text-right text-white">{(p.now_cost / 10).toFixed(1)}</td>
-                  <td className="px-4 py-2 text-right text-white">{p.form}</td>
-                  <td className="px-4 py-2 text-right text-white font-medium">{p.total_points}</td>
-                  <td className="px-4 py-2 text-right text-white">{p.goals_scored}</td>
-                  <td className="px-4 py-2 text-right text-white">{p.assists}</td>
-                  <td className="px-4 py-2 text-right text-white">{p.ict_index}</td>
-                </tr>
-              ))}
+              {pageData.map((p) => {
+                const pTeam = teamsMap?.[p.team];
+                return (
+                  <tr
+                    key={p.id}
+                    className="border-b border-fpl-border/50 hover:bg-white/[0.03] cursor-pointer transition-colors"
+                    onClick={() => setSelectedPlayer(p.id)}
+                  >
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <PlayerJersey team={pTeam} isGkp={p.element_type === 1} size={22} />
+                        <span className="text-white font-medium">{p.web_name}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-1.5">
+                        <TeamBadge team={pTeam} size={18} />
+                        <span className="text-gray-400">{pTeam?.short_name}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2.5 text-gray-400">{posLabels[p.element_type]}</td>
+                    <td className="px-4 py-2.5 text-right text-white">{(p.now_cost / 10).toFixed(1)}</td>
+                    <td className="px-4 py-2.5 text-right text-white">{p.form}</td>
+                    <td className="px-4 py-2.5 text-right text-white font-medium">{p.total_points}</td>
+                    <td className="px-4 py-2.5 text-right text-white">{p.goals_scored}</td>
+                    <td className="px-4 py-2.5 text-right text-white">{p.assists}</td>
+                    <td className="px-4 py-2.5 text-right text-white">{p.ict_index}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -170,6 +213,7 @@ function PlayerDetailModal({ playerId, playersMap, teamsMap, onClose }) {
   if (!player) return null;
 
   const team = teamsMap?.[player.team];
+  const isGkp = player.element_type === 1;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
@@ -177,14 +221,21 @@ function PlayerDetailModal({ playerId, playersMap, teamsMap, onClose }) {
         className="bg-fpl-card border border-fpl-border rounded-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-fpl-border">
-          <div>
-            <h2 className="text-xl font-bold text-white">{player.first_name} {player.second_name}</h2>
-            <p className="text-sm text-gray-400">
-              {team?.name} &middot; {posLabels[player.element_type]} &middot;
-              &pound;{(player.now_cost / 10).toFixed(1)}m &middot;
-              {player.selected_by_percent}% owned
-            </p>
+          <div className="flex items-center gap-4">
+            <PlayerJersey team={team} isGkp={isGkp} size={40} />
+            <div>
+              <h2 className="text-xl font-bold text-white">{player.first_name} {player.second_name}</h2>
+              <div className="flex items-center gap-2 mt-0.5">
+                <TeamBadge team={team} size={16} />
+                <span className="text-sm text-gray-400">
+                  {team?.name} &middot; {posLabels[player.element_type]} &middot;
+                  {'\u00A3'}{(player.now_cost / 10).toFixed(1)}m &middot;
+                  {player.selected_by_percent}% owned
+                </span>
+              </div>
+            </div>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
         </div>
@@ -236,7 +287,7 @@ function PlayerDetailModal({ playerId, playersMap, teamsMap, onClose }) {
                   <thead>
                     <tr className="text-gray-400 border-b border-fpl-border">
                       <th className="px-2 py-1 text-left">GW</th>
-                      <th className="px-2 py-1 text-left">Opp</th>
+                      <th className="px-2 py-1 text-left">Opponent</th>
                       <th className="px-2 py-1 text-right">Pts</th>
                       <th className="px-2 py-1 text-right">Min</th>
                       <th className="px-2 py-1 text-right">G</th>
@@ -245,19 +296,25 @@ function PlayerDetailModal({ playerId, playersMap, teamsMap, onClose }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {history.slice().reverse().map((h) => (
-                      <tr key={h.round} className="border-b border-fpl-border/30">
-                        <td className="px-2 py-1 text-gray-300">{h.round}</td>
-                        <td className="px-2 py-1 text-gray-300">
-                          {teamsMap?.[h.opponent_team]?.short_name || h.opponent_team}
-                        </td>
-                        <td className="px-2 py-1 text-right text-white font-medium">{h.total_points}</td>
-                        <td className="px-2 py-1 text-right text-gray-300">{h.minutes}</td>
-                        <td className="px-2 py-1 text-right text-gray-300">{h.goals_scored}</td>
-                        <td className="px-2 py-1 text-right text-gray-300">{h.assists}</td>
-                        <td className="px-2 py-1 text-right text-gray-300">{h.bps}</td>
-                      </tr>
-                    ))}
+                    {history.slice().reverse().map((h) => {
+                      const oppTeam = teamsMap?.[h.opponent_team];
+                      return (
+                        <tr key={h.round} className="border-b border-fpl-border/30">
+                          <td className="px-2 py-1.5 text-gray-300">{h.round}</td>
+                          <td className="px-2 py-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <TeamBadge team={oppTeam} size={14} />
+                              <span className="text-gray-300">{oppTeam?.short_name || h.opponent_team}</span>
+                            </div>
+                          </td>
+                          <td className="px-2 py-1.5 text-right text-white font-medium">{h.total_points}</td>
+                          <td className="px-2 py-1.5 text-right text-gray-300">{h.minutes}</td>
+                          <td className="px-2 py-1.5 text-right text-gray-300">{h.goals_scored}</td>
+                          <td className="px-2 py-1.5 text-right text-gray-300">{h.assists}</td>
+                          <td className="px-2 py-1.5 text-right text-gray-300">{h.bps}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
