@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTeam } from '../context/TeamContext';
 import useBootstrap from '../hooks/useBootstrap';
 import useEntry from '../hooks/useEntry';
@@ -17,6 +18,7 @@ export default function PlannerPage() {
   const { picks, loading: pLoading } = usePicks(teamId, eventId);
   const { fixtures, loading: fLoading } = useFixtures();
   const [planGws, setPlanGws] = useState(5);
+  const { t } = useTranslation();
 
   const loading = bLoading || pLoading || fLoading;
 
@@ -45,8 +47,8 @@ export default function PlannerPage() {
   if (!teamId) {
     return (
       <div className="text-center py-16">
-        <h1 className="text-2xl font-bold text-white mb-2">Transfer Planner</h1>
-        <p className="text-gray-500">Enter your Team ID on the home page to plan transfers.</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('planner.title')}</h1>
+        <p className="text-gray-400 dark:text-gray-500">{t('planner.noTeam')}</p>
       </div>
     );
   }
@@ -55,32 +57,32 @@ export default function PlannerPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-white">Transfer Planner</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{t('planner.title')}</h1>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-400">GWs ahead:</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">{t('planner.gwsAhead')}</span>
           {[3, 5, 8].map((n) => (
-            <button key={n} onClick={() => setPlanGws(n)} className={`px-3 py-1 text-sm rounded ${planGws === n ? 'bg-fpl-accent text-fpl-dark' : 'bg-fpl-card border border-fpl-border text-gray-300'}`}>{n}</button>
+            <button key={n} onClick={() => setPlanGws(n)} className={`px-3 py-1 text-sm rounded ${planGws === n ? 'bg-fpl-accent text-fpl-dark' : 'bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border text-gray-600 dark:text-gray-300'}`}>{n}</button>
           ))}
         </div>
       </div>
-      <div className="bg-fpl-card border border-fpl-border rounded-lg overflow-x-auto">
+      <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-lg overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-fpl-border">
-              <th className="px-4 py-2 text-left text-gray-400 sticky left-0 bg-fpl-card z-10">Player</th>
-              <th className="px-3 py-2 text-center text-gray-400">Pos</th>
-              <th className="px-3 py-2 text-right text-gray-400">Price</th>
-              {gwRange.map((gw) => (<th key={gw} className="px-3 py-2 text-center text-gray-400">GW{gw}</th>))}
+            <tr className="border-b border-fpl-light-border dark:border-fpl-border">
+              <th className="px-4 py-2 text-left text-gray-500 dark:text-gray-400 sticky left-0 bg-white dark:bg-fpl-card z-10">{t('common.player')}</th>
+              <th className="px-3 py-2 text-center text-gray-500 dark:text-gray-400">{t('common.pos')}</th>
+              <th className="px-3 py-2 text-right text-gray-500 dark:text-gray-400">{t('common.price')}</th>
+              {gwRange.map((gw) => (<th key={gw} className="px-3 py-2 text-center text-gray-500 dark:text-gray-400">GW{gw}</th>))}
             </tr>
           </thead>
           <tbody>
             {squadFixtures.map(({ pick, player, upcoming }) => {
               if (!player) return null;
               return (
-                <tr key={pick.element} className={`border-b border-fpl-border/30 ${pick.position > 11 ? 'opacity-50' : ''}`}>
-                  <td className="px-4 py-2 text-white font-medium sticky left-0 bg-fpl-card z-10">{player.web_name}{pick.is_captain && <span className="ml-1 text-xs text-fpl-accent">(C)</span>}</td>
-                  <td className="px-3 py-2 text-center text-gray-400">{posLabels[player.element_type]}</td>
-                  <td className="px-3 py-2 text-right text-gray-300">£{(player.now_cost / 10).toFixed(1)}</td>
+                <tr key={pick.element} className={`border-b border-fpl-light-border/30 dark:border-fpl-border/30 ${pick.position > 11 ? 'opacity-50' : ''}`}>
+                  <td className="px-4 py-2 text-gray-900 dark:text-white font-medium sticky left-0 bg-white dark:bg-fpl-card z-10">{player.web_name}{pick.is_captain && <span className="ml-1 text-xs text-fpl-accent">(C)</span>}</td>
+                  <td className="px-3 py-2 text-center text-gray-500 dark:text-gray-400">{posLabels[player.element_type]}</td>
+                  <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">£{(player.now_cost / 10).toFixed(1)}</td>
                   {upcoming.map((f) => (<td key={f.gw} className="px-1 py-1 text-center"><DifficultyBadge difficulty={f.diff} label={`${f.opp} (${f.home ? 'H' : 'A'})`} /></td>))}
                 </tr>
               );
