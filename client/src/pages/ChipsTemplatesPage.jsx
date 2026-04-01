@@ -1,17 +1,22 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import useBootstrap from '../hooks/useBootstrap';
 import Spinner from '../components/common/Spinner';
 import ErrorBanner from '../components/common/ErrorBanner';
 
-const chipDescriptions = {
-  bboost: { name: 'Bench Boost', desc: 'Points scored by bench players count towards GW total.' },
-  '3xc': { name: 'Triple Captain', desc: 'Captain scores 3x points instead of 2x.' },
-  freehit: { name: 'Free Hit', desc: 'Make unlimited transfers for one gameweek only.' },
-  wildcard: { name: 'Wildcard', desc: 'Make unlimited permanent transfers. Available twice per season.' },
-};
+function getChipDescriptions(t) {
+  return {
+    bboost: { name: t('chips.benchBoost'), desc: t('chips.benchBoostDesc') },
+    '3xc': { name: t('chips.tripleCaptain'), desc: t('chips.tripleCaptainDesc') },
+    freehit: { name: t('chips.freeHit'), desc: t('chips.freeHitDesc') },
+    wildcard: { name: t('chips.wildcard'), desc: t('chips.wildcardDesc') },
+  };
+}
 
 export default function ChipsTemplatesPage() {
   const { gameweeks, players, teamsMap, loading, error } = useBootstrap();
+  const { t } = useTranslation();
+  const chipDescriptions = getChipDescriptions(t);
 
   const chipUsage = useMemo(() => {
     if (!gameweeks) return [];
@@ -24,7 +29,6 @@ export default function ChipsTemplatesPage() {
     return all;
   }, [gameweeks]);
 
-  // Aggregate by chip
   const chipTotals = useMemo(() => {
     const map = {};
     chipUsage.forEach(({ chip, count }) => {
@@ -33,7 +37,6 @@ export default function ChipsTemplatesPage() {
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   }, [chipUsage]);
 
-  // Template teams — most selected players form the "template"
   const template = useMemo(() => {
     if (!players) return [];
     return [...players]
@@ -47,44 +50,42 @@ export default function ChipsTemplatesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Chips & Templates</h1>
-        <p className="text-gray-400 text-sm mt-1">Chip usage trends and the most popular team template.</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{t('chips.title')}</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{t('chips.subtitle')}</p>
       </div>
 
-      {/* Chip Descriptions */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Object.entries(chipDescriptions).map(([key, { name, desc }]) => {
           const total = chipTotals.find(([k]) => k === key)?.[1] || 0;
           return (
-            <div key={key} className="bg-fpl-card border border-fpl-border rounded-lg p-4">
+            <div key={key} className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-lg p-4">
               <p className="text-fpl-accent font-semibold">{name}</p>
-              <p className="text-xs text-gray-400 mt-1">{desc}</p>
-              <p className="text-xl font-bold text-white mt-3">{new Intl.NumberFormat().format(total)}</p>
-              <p className="text-xs text-gray-500">total uses</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{desc}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white mt-3">{new Intl.NumberFormat().format(total)}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">{t('chips.totalUses')}</p>
             </div>
           );
         })}
       </div>
 
-      {/* Chip Usage by GW */}
       {chipUsage.length > 0 && (
-        <div className="bg-fpl-card border border-fpl-border rounded-lg overflow-hidden">
-          <h3 className="text-sm font-semibold text-gray-400 uppercase px-4 py-3 border-b border-fpl-border">Chip Usage by Gameweek</h3>
+        <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-lg overflow-hidden">
+          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase px-4 py-3 border-b border-fpl-light-border dark:border-fpl-border">{t('chips.chipUsageByGw')}</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-gray-400 border-b border-fpl-border">
-                  <th className="px-4 py-2 text-left">GW</th>
-                  <th className="px-4 py-2 text-left">Chip</th>
-                  <th className="px-4 py-2 text-right">Managers</th>
+                <tr className="text-gray-500 dark:text-gray-400 border-b border-fpl-light-border dark:border-fpl-border">
+                  <th className="px-4 py-2 text-left">{t('common.gw')}</th>
+                  <th className="px-4 py-2 text-left">{t('common.chip')}</th>
+                  <th className="px-4 py-2 text-right">{t('rankTiers.managers')}</th>
                 </tr>
               </thead>
               <tbody>
                 {chipUsage.map((c) => (
-                  <tr key={`${c.gw}-${c.chip}`} className="border-b border-fpl-border/30">
-                    <td className="px-4 py-2 text-white">GW {c.gw}</td>
+                  <tr key={`${c.gw}-${c.chip}`} className="border-b border-fpl-light-border/30 dark:border-fpl-border/30">
+                    <td className="px-4 py-2 text-gray-900 dark:text-white">GW {c.gw}</td>
                     <td className="px-4 py-2 text-fpl-yellow capitalize">{chipDescriptions[c.chip]?.name || c.chip}</td>
-                    <td className="px-4 py-2 text-right text-gray-300">{new Intl.NumberFormat().format(c.count)}</td>
+                    <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300">{new Intl.NumberFormat().format(c.count)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -93,27 +94,26 @@ export default function ChipsTemplatesPage() {
         </div>
       )}
 
-      {/* Template Team */}
-      <div className="bg-fpl-card border border-fpl-border rounded-lg overflow-hidden">
-        <h3 className="text-sm font-semibold text-fpl-accent uppercase px-4 py-3 border-b border-fpl-border">Template Team (Most Selected)</h3>
+      <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-lg overflow-hidden">
+        <h3 className="text-sm font-semibold text-fpl-accent uppercase px-4 py-3 border-b border-fpl-light-border dark:border-fpl-border">{t('chips.templateTeam')}</h3>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-gray-400 border-b border-fpl-border">
-              <th className="px-4 py-2 text-left">Player</th>
-              <th className="px-4 py-2 text-left">Team</th>
-              <th className="px-4 py-2 text-right">Owned%</th>
-              <th className="px-4 py-2 text-right">Price</th>
-              <th className="px-4 py-2 text-right">Points</th>
+            <tr className="text-gray-500 dark:text-gray-400 border-b border-fpl-light-border dark:border-fpl-border">
+              <th className="px-4 py-2 text-left">{t('common.player')}</th>
+              <th className="px-4 py-2 text-left">{t('common.team')}</th>
+              <th className="px-4 py-2 text-right">{t('common.owned')}</th>
+              <th className="px-4 py-2 text-right">{t('common.price')}</th>
+              <th className="px-4 py-2 text-right">{t('common.points')}</th>
             </tr>
           </thead>
           <tbody>
             {template.map((p) => (
-              <tr key={p.id} className="border-b border-fpl-border/30">
-                <td className="px-4 py-2 text-white font-medium">{p.web_name}</td>
-                <td className="px-4 py-2 text-gray-400">{teamsMap?.[p.team]?.short_name}</td>
+              <tr key={p.id} className="border-b border-fpl-light-border/30 dark:border-fpl-border/30">
+                <td className="px-4 py-2 text-gray-900 dark:text-white font-medium">{p.web_name}</td>
+                <td className="px-4 py-2 text-gray-500 dark:text-gray-400">{teamsMap?.[p.team]?.short_name}</td>
                 <td className="px-4 py-2 text-right text-fpl-accent">{p.selected_by_percent}%</td>
-                <td className="px-4 py-2 text-right text-gray-300">£{(p.now_cost / 10).toFixed(1)}</td>
-                <td className="px-4 py-2 text-right text-white">{p.total_points}</td>
+                <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300">£{(p.now_cost / 10).toFixed(1)}</td>
+                <td className="px-4 py-2 text-right text-gray-900 dark:text-white">{p.total_points}</td>
               </tr>
             ))}
           </tbody>
