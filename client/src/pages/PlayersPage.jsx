@@ -1,6 +1,9 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import useBootstrap from '../hooks/useBootstrap';
 import usePlayerDetail from '../hooks/usePlayerDetail';
+import { useTheme } from '../context/ThemeContext';
+import { getChartTheme } from '../utils/chartTheme';
 import Spinner from '../components/common/Spinner';
 import ErrorBanner from '../components/common/ErrorBanner';
 import DifficultyBadge from '../components/common/DifficultyBadge';
@@ -12,7 +15,7 @@ const PL_BADGE_URL = 'https://resources.premierleague.com/premierleague/badges/7
 
 /* ─── Reusable: Team Badge ─── */
 function TeamBadge({ team, size = 20 }) {
-  if (!team) return <div className="rounded-full bg-fpl-border shrink-0" style={{ width: size, height: size }} />;
+  if (!team) return <div className="rounded-full bg-gray-200 dark:bg-fpl-border shrink-0" style={{ width: size, height: size }} />;
   return (
     <img
       src={`${PL_BADGE_URL}/t${team.code}.png`}
@@ -47,6 +50,7 @@ export default function PlayersPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const { t } = useTranslation();
 
   const filtered = useMemo(() => {
     if (!players) return [];
@@ -69,16 +73,16 @@ export default function PlayersPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-white">Players</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{t('players.title')}</h1>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <select
           value={position}
           onChange={(e) => { setPosition(e.target.value); setPage(0); }}
-          className="bg-fpl-dark border border-fpl-border rounded-lg px-3 py-2 text-sm text-white"
+          className="bg-gray-50 dark:bg-fpl-dark border border-fpl-light-border dark:border-fpl-border rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white"
         >
-          <option value="all">All Positions</option>
+          <option value="all">{t('players.allPositions')}</option>
           {elementTypes?.map((et) => (
             <option key={et.id} value={et.id}>{et.singular_name}</option>
           ))}
@@ -87,51 +91,51 @@ export default function PlayersPage() {
         <select
           value={team}
           onChange={(e) => { setTeam(e.target.value); setPage(0); }}
-          className="bg-fpl-dark border border-fpl-border rounded-lg px-3 py-2 text-sm text-white"
+          className="bg-gray-50 dark:bg-fpl-dark border border-fpl-light-border dark:border-fpl-border rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white"
         >
-          <option value="all">All Teams</option>
-          {teams?.sort((a, b) => a.name.localeCompare(b.name)).map((t) => (
-            <option key={t.id} value={t.id}>{t.name}</option>
+          <option value="all">{t('players.allTeams')}</option>
+          {teams?.sort((a, b) => a.name.localeCompare(b.name)).map((tm) => (
+            <option key={tm.id} value={tm.id}>{tm.name}</option>
           ))}
         </select>
 
         <select
           value={sortBy}
           onChange={(e) => { setSortBy(e.target.value); setPage(0); }}
-          className="bg-fpl-dark border border-fpl-border rounded-lg px-3 py-2 text-sm text-white"
+          className="bg-gray-50 dark:bg-fpl-dark border border-fpl-light-border dark:border-fpl-border rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white"
         >
-          <option value="total_points">Total Points</option>
-          <option value="now_cost">Price</option>
-          <option value="form">Form</option>
-          <option value="goals_scored">Goals</option>
-          <option value="assists">Assists</option>
-          <option value="ict_index">ICT Index</option>
+          <option value="total_points">{t('players.totalPoints')}</option>
+          <option value="now_cost">{t('players.price')}</option>
+          <option value="form">{t('players.form')}</option>
+          <option value="goals_scored">{t('players.goals')}</option>
+          <option value="assists">{t('players.assists')}</option>
+          <option value="ict_index">{t('players.ictIndex')}</option>
         </select>
 
         <input
           type="text"
-          placeholder="Search player..."
+          placeholder={t('players.searchPlayer')}
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-          className="bg-fpl-dark border border-fpl-border rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 flex-1 min-w-[150px]"
+          className="bg-gray-50 dark:bg-fpl-dark border border-fpl-light-border dark:border-fpl-border rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 flex-1 min-w-[150px]"
         />
       </div>
 
       {/* Table */}
-      <div className="bg-fpl-card border border-fpl-border rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-gray-400 text-left border-b border-fpl-border text-xs uppercase tracking-wider">
-                <th className="px-4 py-2.5">Player</th>
-                <th className="px-4 py-2.5">Team</th>
-                <th className="px-4 py-2.5">Pos</th>
-                <th className="px-4 py-2.5 text-right">Price</th>
-                <th className="px-4 py-2.5 text-right">Form</th>
-                <th className="px-4 py-2.5 text-right">Pts</th>
-                <th className="px-4 py-2.5 text-right">Goals</th>
-                <th className="px-4 py-2.5 text-right">Assists</th>
-                <th className="px-4 py-2.5 text-right">ICT</th>
+              <tr className="text-gray-500 dark:text-gray-400 text-left border-b border-fpl-light-border dark:border-fpl-border text-xs uppercase tracking-wider">
+                <th className="px-4 py-2.5">{t('common.player')}</th>
+                <th className="px-4 py-2.5">{t('common.team')}</th>
+                <th className="px-4 py-2.5">{t('common.pos')}</th>
+                <th className="px-4 py-2.5 text-right">{t('common.price')}</th>
+                <th className="px-4 py-2.5 text-right">{t('common.form')}</th>
+                <th className="px-4 py-2.5 text-right">{t('common.pts')}</th>
+                <th className="px-4 py-2.5 text-right hidden sm:table-cell">{t('players.goals')}</th>
+                <th className="px-4 py-2.5 text-right hidden sm:table-cell">{t('players.assists')}</th>
+                <th className="px-4 py-2.5 text-right hidden sm:table-cell">{t('players.ictIndex')}</th>
               </tr>
             </thead>
             <tbody>
@@ -140,28 +144,28 @@ export default function PlayersPage() {
                 return (
                   <tr
                     key={p.id}
-                    className="border-b border-fpl-border/50 hover:bg-white/[0.03] cursor-pointer transition-colors"
+                    className="border-b border-fpl-light-border/50 dark:border-fpl-border/50 hover:bg-gray-50 dark:hover:bg-white/[0.03] cursor-pointer transition-colors"
                     onClick={() => setSelectedPlayer(p.id)}
                   >
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2.5">
                         <PlayerJersey team={pTeam} isGkp={p.element_type === 1} size={22} />
-                        <span className="text-white font-medium">{p.web_name}</span>
+                        <span className="text-gray-900 dark:text-white font-medium">{p.web_name}</span>
                       </div>
                     </td>
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-1.5">
                         <TeamBadge team={pTeam} size={18} />
-                        <span className="text-gray-400">{pTeam?.short_name}</span>
+                        <span className="text-gray-500 dark:text-gray-400">{pTeam?.short_name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-2.5 text-gray-400">{posLabels[p.element_type]}</td>
-                    <td className="px-4 py-2.5 text-right text-white">{(p.now_cost / 10).toFixed(1)}</td>
-                    <td className="px-4 py-2.5 text-right text-white">{p.form}</td>
-                    <td className="px-4 py-2.5 text-right text-white font-medium">{p.total_points}</td>
-                    <td className="px-4 py-2.5 text-right text-white">{p.goals_scored}</td>
-                    <td className="px-4 py-2.5 text-right text-white">{p.assists}</td>
-                    <td className="px-4 py-2.5 text-right text-white">{p.ict_index}</td>
+                    <td className="px-4 py-2.5 text-gray-500 dark:text-gray-400">{posLabels[p.element_type]}</td>
+                    <td className="px-4 py-2.5 text-right text-gray-900 dark:text-white">{(p.now_cost / 10).toFixed(1)}</td>
+                    <td className="px-4 py-2.5 text-right text-gray-900 dark:text-white">{p.form}</td>
+                    <td className="px-4 py-2.5 text-right text-gray-900 dark:text-white font-medium">{p.total_points}</td>
+                    <td className="px-4 py-2.5 text-right text-gray-900 dark:text-white hidden sm:table-cell">{p.goals_scored}</td>
+                    <td className="px-4 py-2.5 text-right text-gray-900 dark:text-white hidden sm:table-cell">{p.assists}</td>
+                    <td className="px-4 py-2.5 text-right text-gray-900 dark:text-white hidden sm:table-cell">{p.ict_index}</td>
                   </tr>
                 );
               })}
@@ -176,19 +180,19 @@ export default function PlayersPage() {
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
-            className="px-3 py-1.5 text-sm rounded bg-fpl-card border border-fpl-border text-gray-300 disabled:opacity-30"
+            className="px-3 py-1.5 text-sm rounded bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border text-gray-600 dark:text-gray-300 disabled:opacity-30"
           >
-            Prev
+            {t('players.prev')}
           </button>
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             {page + 1} / {pageCount}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
             disabled={page >= pageCount - 1}
-            className="px-3 py-1.5 text-sm rounded bg-fpl-card border border-fpl-border text-gray-300 disabled:opacity-30"
+            className="px-3 py-1.5 text-sm rounded bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border text-gray-600 dark:text-gray-300 disabled:opacity-30"
           >
-            Next
+            {t('players.next')}
           </button>
         </div>
       )}
@@ -200,15 +204,19 @@ export default function PlayersPage() {
           playersMap={players ? Object.fromEntries(players.map((p) => [p.id, p])) : {}}
           teamsMap={teamsMap}
           onClose={() => setSelectedPlayer(null)}
+          t={t}
         />
       )}
     </div>
   );
 }
 
-function PlayerDetailModal({ playerId, playersMap, teamsMap, onClose }) {
+function PlayerDetailModal({ playerId, playersMap, teamsMap, onClose, t }) {
   const player = playersMap[playerId];
   const { history, fixtures, loading, error } = usePlayerDetail(playerId);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const chart = getChartTheme(isDark);
 
   if (!player) return null;
 
@@ -216,43 +224,43 @@ function PlayerDetailModal({ playerId, playersMap, teamsMap, onClose }) {
   const isGkp = player.element_type === 1;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 p-4" onClick={onClose}>
       <div
-        className="bg-fpl-card border border-fpl-border rounded-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto"
+        className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-fpl-border">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-fpl-light-border dark:border-fpl-border">
           <div className="flex items-center gap-4">
             <PlayerJersey team={team} isGkp={isGkp} size={40} />
             <div>
-              <h2 className="text-xl font-bold text-white">{player.first_name} {player.second_name}</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{player.first_name} {player.second_name}</h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <TeamBadge team={team} size={16} />
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   {team?.name} &middot; {posLabels[player.element_type]} &middot;
                   {'\u00A3'}{(player.now_cost / 10).toFixed(1)}m &middot;
-                  {player.selected_by_percent}% owned
+                  {player.selected_by_percent}% {t('players.owned')}
                 </span>
               </div>
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-900 dark:hover:text-white text-2xl">&times;</button>
         </div>
 
         <div className="p-6 space-y-6">
           {/* Season stats */}
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 text-center">
             {[
-              ['Points', player.total_points],
-              ['Goals', player.goals_scored],
-              ['Assists', player.assists],
-              ['Minutes', player.minutes],
-              ['Form', player.form],
+              [t('players.points'), player.total_points],
+              [t('players.goals'), player.goals_scored],
+              [t('players.assists'), player.assists],
+              [t('players.minutes'), player.minutes],
+              [t('players.form'), player.form],
             ].map(([label, val]) => (
-              <div key={label} className="bg-fpl-dark rounded-lg p-3">
-                <p className="text-xs text-gray-400">{label}</p>
-                <p className="text-lg font-bold text-white">{val}</p>
+              <div key={label} className="bg-gray-50 dark:bg-fpl-dark rounded-lg p-3">
+                <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{val}</p>
               </div>
             ))}
           </div>
@@ -263,16 +271,16 @@ function PlayerDetailModal({ playerId, playersMap, teamsMap, onClose }) {
           {/* Points Chart */}
           {history.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-300 mb-2">Points per Gameweek</h3>
+              <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{t('players.pointsPerGw')}</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={history}>
-                  <XAxis dataKey="round" tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                  <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                  <XAxis dataKey="round" tick={{ fill: chart.tickFill, fontSize: 11 }} />
+                  <YAxis tick={{ fill: chart.tickFill, fontSize: 11 }} />
                   <Tooltip
-                    contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
-                    labelStyle={{ color: '#94a3b8' }}
+                    contentStyle={{ background: chart.tooltipBg, border: `1px solid ${chart.tooltipBorder}`, borderRadius: 8 }}
+                    labelStyle={{ color: chart.tickFill }}
                   />
-                  <Line type="monotone" dataKey="total_points" stroke="#38bdf8" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="total_points" stroke={chart.lineStroke} strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -281,37 +289,37 @@ function PlayerDetailModal({ playerId, playersMap, teamsMap, onClose }) {
           {/* Match History */}
           {history.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-300 mb-2">Match History</h3>
+              <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{t('players.matchHistory')}</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="text-gray-400 border-b border-fpl-border">
-                      <th className="px-2 py-1 text-left">GW</th>
-                      <th className="px-2 py-1 text-left">Opponent</th>
-                      <th className="px-2 py-1 text-right">Pts</th>
-                      <th className="px-2 py-1 text-right">Min</th>
-                      <th className="px-2 py-1 text-right">G</th>
-                      <th className="px-2 py-1 text-right">A</th>
-                      <th className="px-2 py-1 text-right">BPS</th>
+                    <tr className="text-gray-500 dark:text-gray-400 border-b border-fpl-light-border dark:border-fpl-border">
+                      <th className="px-2 py-1 text-left">{t('players.gw')}</th>
+                      <th className="px-2 py-1 text-left">{t('players.opponent')}</th>
+                      <th className="px-2 py-1 text-right">{t('common.pts')}</th>
+                      <th className="px-2 py-1 text-right">{t('players.min')}</th>
+                      <th className="px-2 py-1 text-right">{t('players.goals')}</th>
+                      <th className="px-2 py-1 text-right">{t('players.assists')}</th>
+                      <th className="px-2 py-1 text-right">{t('players.bps')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {history.slice().reverse().map((h) => {
                       const oppTeam = teamsMap?.[h.opponent_team];
                       return (
-                        <tr key={h.round} className="border-b border-fpl-border/30">
-                          <td className="px-2 py-1.5 text-gray-300">{h.round}</td>
+                        <tr key={h.round} className="border-b border-fpl-light-border/30 dark:border-fpl-border/30">
+                          <td className="px-2 py-1.5 text-gray-600 dark:text-gray-300">{h.round}</td>
                           <td className="px-2 py-1.5">
                             <div className="flex items-center gap-1.5">
                               <TeamBadge team={oppTeam} size={14} />
-                              <span className="text-gray-300">{oppTeam?.short_name || h.opponent_team}</span>
+                              <span className="text-gray-600 dark:text-gray-300">{oppTeam?.short_name || h.opponent_team}</span>
                             </div>
                           </td>
-                          <td className="px-2 py-1.5 text-right text-white font-medium">{h.total_points}</td>
-                          <td className="px-2 py-1.5 text-right text-gray-300">{h.minutes}</td>
-                          <td className="px-2 py-1.5 text-right text-gray-300">{h.goals_scored}</td>
-                          <td className="px-2 py-1.5 text-right text-gray-300">{h.assists}</td>
-                          <td className="px-2 py-1.5 text-right text-gray-300">{h.bps}</td>
+                          <td className="px-2 py-1.5 text-right text-gray-900 dark:text-white font-medium">{h.total_points}</td>
+                          <td className="px-2 py-1.5 text-right text-gray-600 dark:text-gray-300">{h.minutes}</td>
+                          <td className="px-2 py-1.5 text-right text-gray-600 dark:text-gray-300">{h.goals_scored}</td>
+                          <td className="px-2 py-1.5 text-right text-gray-600 dark:text-gray-300">{h.assists}</td>
+                          <td className="px-2 py-1.5 text-right text-gray-600 dark:text-gray-300">{h.bps}</td>
                         </tr>
                       );
                     })}
@@ -324,7 +332,7 @@ function PlayerDetailModal({ playerId, playersMap, teamsMap, onClose }) {
           {/* Upcoming Fixtures */}
           {fixtures.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-300 mb-2">Upcoming Fixtures</h3>
+              <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">{t('players.upcomingFixtures')}</h3>
               <div className="flex flex-wrap gap-2">
                 {fixtures.slice(0, 6).map((f) => {
                   const isHome = f.is_home;
