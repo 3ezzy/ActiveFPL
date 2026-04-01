@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import useBootstrap from '../hooks/useBootstrap';
 import useFixtures from '../hooks/useFixtures';
 import Spinner from '../components/common/Spinner';
@@ -7,6 +8,7 @@ import ErrorBanner from '../components/common/ErrorBanner';
 export default function LivePage() {
   const { currentEvent, teamsMap, playersMap, loading: bLoading, error: bError } = useBootstrap();
   const { fixtures, loading: fLoading, error: fError } = useFixtures();
+  const { t } = useTranslation();
 
   const loading = bLoading || fLoading;
   const error = bError || fError;
@@ -64,8 +66,8 @@ export default function LivePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">
-        Live &mdash; Gameweek {currentEvent?.id}
+      <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+        {t('live.title', { gw: currentEvent?.id })}
       </h1>
 
       {/* Live Match Cards */}
@@ -77,31 +79,31 @@ export default function LivePage() {
           return (
             <div
               key={f.id}
-              className={`bg-fpl-card border rounded-lg p-4 ${
-                isLive ? 'border-fpl-green' : 'border-fpl-border'
+              className={`bg-white dark:bg-fpl-card border rounded-lg p-4 ${
+                isLive ? 'border-fpl-green' : 'border-fpl-light-border dark:border-fpl-border'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-white font-medium flex-1 text-center">{home?.short_name}</span>
+                <span className="text-gray-900 dark:text-white font-medium flex-1 text-center">{home?.short_name}</span>
                 <div className="text-center px-3">
-                  <p className="text-xl font-bold text-white">
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">
                     {f.team_h_score ?? 0} - {f.team_a_score ?? 0}
                   </p>
                   {isLive && (
                     <span className="text-xs text-fpl-green font-semibold animate-pulse">
-                      LIVE {f.minutes}'
+                      {t('common.live')} {f.minutes}'
                     </span>
                   )}
-                  {f.finished && <span className="text-xs text-gray-500">FT</span>}
+                  {f.finished && <span className="text-xs text-gray-400 dark:text-gray-500">{t('live.ft')}</span>}
                   {!f.started && (
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
                       {f.kickoff_time
                         ? new Date(f.kickoff_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                        : 'TBD'}
+                        : t('live.tbd')}
                     </span>
                   )}
                 </div>
-                <span className="text-white font-medium flex-1 text-center">{away?.short_name}</span>
+                <span className="text-gray-900 dark:text-white font-medium flex-1 text-center">{away?.short_name}</span>
               </div>
             </div>
           );
@@ -111,17 +113,17 @@ export default function LivePage() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Goal Involvements */}
         {goalScorers.length > 0 && (
-          <div className="bg-fpl-card border border-fpl-border rounded-lg overflow-hidden">
-            <h2 className="text-lg font-semibold text-white px-4 py-3 border-b border-fpl-border">
-              Goals & Assists
+          <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-lg overflow-hidden">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white px-4 py-3 border-b border-fpl-light-border dark:border-fpl-border">
+              {t('live.goalsAndAssists')}
             </h2>
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-gray-400 border-b border-fpl-border">
-                  <th className="px-4 py-2 text-left">Player</th>
-                  <th className="px-4 py-2 text-left">Team</th>
-                  <th className="px-4 py-2 text-right">Goals</th>
-                  <th className="px-4 py-2 text-right">Assists</th>
+                <tr className="text-gray-500 dark:text-gray-400 border-b border-fpl-light-border dark:border-fpl-border">
+                  <th className="px-4 py-2 text-left">{t('common.player')}</th>
+                  <th className="px-4 py-2 text-left">{t('common.team')}</th>
+                  <th className="px-4 py-2 text-right">{t('players.goals')}</th>
+                  <th className="px-4 py-2 text-right">{t('players.assists')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -129,11 +131,11 @@ export default function LivePage() {
                   const player = playersMap?.[gs.id];
                   const team = teamsMap?.[player?.team];
                   return (
-                    <tr key={gs.id} className="border-b border-fpl-border/30">
-                      <td className="px-4 py-2 text-white">{player?.web_name || '?'}</td>
-                      <td className="px-4 py-2 text-gray-400">{team?.short_name || '-'}</td>
-                      <td className="px-4 py-2 text-right text-white">{gs.goals || '-'}</td>
-                      <td className="px-4 py-2 text-right text-white">{gs.assists || '-'}</td>
+                    <tr key={gs.id} className="border-b border-fpl-light-border/30 dark:border-fpl-border/30">
+                      <td className="px-4 py-2 text-gray-900 dark:text-white">{player?.web_name || '?'}</td>
+                      <td className="px-4 py-2 text-gray-500 dark:text-gray-400">{team?.short_name || '-'}</td>
+                      <td className="px-4 py-2 text-right text-gray-900 dark:text-white">{gs.goals || '-'}</td>
+                      <td className="px-4 py-2 text-right text-gray-900 dark:text-white">{gs.assists || '-'}</td>
                     </tr>
                   );
                 })}
@@ -144,16 +146,16 @@ export default function LivePage() {
 
         {/* BPS Table */}
         {bpsPlayers.length > 0 && (
-          <div className="bg-fpl-card border border-fpl-border rounded-lg overflow-hidden">
-            <h2 className="text-lg font-semibold text-white px-4 py-3 border-b border-fpl-border">
-              Bonus Points (BPS)
+          <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-lg overflow-hidden">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white px-4 py-3 border-b border-fpl-light-border dark:border-fpl-border">
+              {t('live.bonusPoints')}
             </h2>
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-gray-400 border-b border-fpl-border">
-                  <th className="px-4 py-2 text-left">Player</th>
-                  <th className="px-4 py-2 text-left">Team</th>
-                  <th className="px-4 py-2 text-right">BPS</th>
+                <tr className="text-gray-500 dark:text-gray-400 border-b border-fpl-light-border dark:border-fpl-border">
+                  <th className="px-4 py-2 text-left">{t('common.player')}</th>
+                  <th className="px-4 py-2 text-left">{t('common.team')}</th>
+                  <th className="px-4 py-2 text-right">{t('players.bps')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -161,10 +163,10 @@ export default function LivePage() {
                   const player = playersMap?.[bp.id];
                   const team = teamsMap?.[player?.team];
                   return (
-                    <tr key={bp.id} className="border-b border-fpl-border/30">
-                      <td className="px-4 py-2 text-white">{player?.web_name || '?'}</td>
-                      <td className="px-4 py-2 text-gray-400">{team?.short_name || '-'}</td>
-                      <td className="px-4 py-2 text-right text-white font-medium">{bp.bps}</td>
+                    <tr key={bp.id} className="border-b border-fpl-light-border/30 dark:border-fpl-border/30">
+                      <td className="px-4 py-2 text-gray-900 dark:text-white">{player?.web_name || '?'}</td>
+                      <td className="px-4 py-2 text-gray-500 dark:text-gray-400">{team?.short_name || '-'}</td>
+                      <td className="px-4 py-2 text-right text-gray-900 dark:text-white font-medium">{bp.bps}</td>
                     </tr>
                   );
                 })}
@@ -175,8 +177,8 @@ export default function LivePage() {
       </div>
 
       {liveFixtures.length === 0 && (
-        <p className="text-gray-500 text-center py-12">
-          No fixtures in the current gameweek yet.
+        <p className="text-gray-400 dark:text-gray-500 text-center py-12">
+          {t('live.noFixtures')}
         </p>
       )}
     </div>
