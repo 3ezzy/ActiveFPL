@@ -5,6 +5,35 @@ import useFixtures from '../hooks/useFixtures';
 import Spinner from '../components/common/Spinner';
 import ErrorBanner from '../components/common/ErrorBanner';
 
+const PL_BADGE_URL = 'https://resources.premierleague.com/premierleague/badges/70';
+
+function TeamBadge({ team, size = 24 }) {
+  if (!team) return <div className="rounded-full bg-gray-300 dark:bg-fpl-border shrink-0" style={{ width: size, height: size }} />;
+  return (
+    <img
+      src={`${PL_BADGE_URL}/t${team.code}.png`}
+      alt={team.short_name}
+      className="object-contain shrink-0"
+      style={{ width: size, height: size }}
+      onError={(e) => { e.target.style.display = 'none'; }}
+    />
+  );
+}
+
+function PlayerJersey({ team, isGkp, size = 20 }) {
+  if (!team) return null;
+  const shirtType = isGkp ? `shirt_${team.code}_1` : `shirt_${team.code}`;
+  return (
+    <img
+      src={`https://fantasy.premierleague.com/dist/img/shirts/standard/${shirtType}-110.webp`}
+      alt={team.short_name}
+      className="object-contain shrink-0"
+      style={{ width: size, height: size * 1.2 }}
+      onError={(e) => { e.target.style.display = 'none'; }}
+    />
+  );
+}
+
 export default function LivePage() {
   const { currentEvent, teamsMap, playersMap, loading: bLoading, error: bError } = useBootstrap();
   const { fixtures, loading: fLoading, error: fError } = useFixtures();
@@ -84,7 +113,10 @@ export default function LivePage() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-gray-900 dark:text-white font-medium flex-1 text-center">{home?.short_name}</span>
+                <div className="flex items-center justify-center gap-2 flex-1">
+                  <TeamBadge team={home} size={24} />
+                  <span className="text-gray-900 dark:text-white font-medium">{home?.short_name}</span>
+                </div>
                 <div className="text-center px-3">
                   <p className="text-xl font-bold text-gray-900 dark:text-white">
                     {f.team_h_score ?? 0} - {f.team_a_score ?? 0}
@@ -103,7 +135,10 @@ export default function LivePage() {
                     </span>
                   )}
                 </div>
-                <span className="text-gray-900 dark:text-white font-medium flex-1 text-center">{away?.short_name}</span>
+                <div className="flex items-center justify-center gap-2 flex-1">
+                  <span className="text-gray-900 dark:text-white font-medium">{away?.short_name}</span>
+                  <TeamBadge team={away} size={24} />
+                </div>
               </div>
             </div>
           );
@@ -132,8 +167,18 @@ export default function LivePage() {
                   const team = teamsMap?.[player?.team];
                   return (
                     <tr key={gs.id} className="border-b border-fpl-light-border/30 dark:border-fpl-border/30">
-                      <td className="px-4 py-2 text-gray-900 dark:text-white">{player?.web_name || '?'}</td>
-                      <td className="px-4 py-2 text-gray-500 dark:text-gray-400">{team?.short_name || '-'}</td>
+                      <td className="px-4 py-2 text-gray-900 dark:text-white">
+                        <div className="flex items-center gap-2">
+                          <PlayerJersey team={team} isGkp={player?.element_type === 1} size={20} />
+                          <span>{player?.web_name || '?'}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center gap-1.5">
+                          <TeamBadge team={team} size={16} />
+                          <span>{team?.short_name || '-'}</span>
+                        </div>
+                      </td>
                       <td className="px-4 py-2 text-right text-gray-900 dark:text-white">{gs.goals || '-'}</td>
                       <td className="px-4 py-2 text-right text-gray-900 dark:text-white">{gs.assists || '-'}</td>
                     </tr>
@@ -164,8 +209,18 @@ export default function LivePage() {
                   const team = teamsMap?.[player?.team];
                   return (
                     <tr key={bp.id} className="border-b border-fpl-light-border/30 dark:border-fpl-border/30">
-                      <td className="px-4 py-2 text-gray-900 dark:text-white">{player?.web_name || '?'}</td>
-                      <td className="px-4 py-2 text-gray-500 dark:text-gray-400">{team?.short_name || '-'}</td>
+                      <td className="px-4 py-2 text-gray-900 dark:text-white">
+                        <div className="flex items-center gap-2">
+                          <PlayerJersey team={team} isGkp={player?.element_type === 1} size={20} />
+                          <span>{player?.web_name || '?'}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center gap-1.5">
+                          <TeamBadge team={team} size={16} />
+                          <span>{team?.short_name || '-'}</span>
+                        </div>
+                      </td>
                       <td className="px-4 py-2 text-right text-gray-900 dark:text-white font-medium">{bp.bps}</td>
                     </tr>
                   );
