@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -12,6 +13,11 @@ export default {
           green: '#22c55e',
           red: '#ef4444',
           yellow: '#eab308',
+        },
+        'fpl-light': {
+          dark: '#f8fafc',
+          card: '#ffffff',
+          border: '#e2e8f0',
         },
       },
     },
