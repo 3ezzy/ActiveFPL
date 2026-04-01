@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import useBootstrap from '../hooks/useBootstrap';
 import Spinner from '../components/common/Spinner';
 import ErrorBanner from '../components/common/ErrorBanner';
@@ -9,6 +10,7 @@ export default function OwnershipCombinationsPage() {
   const { players, teamsMap, elementTypes, loading, error } = useBootstrap();
   const [position, setPosition] = useState('all');
   const [minOwnership, setMinOwnership] = useState(5);
+  const { t } = useTranslation();
 
   const owned = useMemo(() => {
     if (!players) return [];
@@ -17,7 +19,6 @@ export default function OwnershipCombinationsPage() {
     return list.sort((a, b) => parseFloat(b.selected_by_percent) - parseFloat(a.selected_by_percent));
   }, [players, position, minOwnership]);
 
-  // Ownership by position
   const posBuckets = useMemo(() => {
     if (!players) return {};
     const buckets = { 1: [], 2: [], 3: [], 4: [] };
@@ -36,20 +37,19 @@ export default function OwnershipCombinationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Ownership Combinations</h1>
-        <p className="text-gray-400 text-sm mt-1">Most commonly owned players by position and ownership threshold.</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{t('ownership.title')}</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{t('ownership.subtitle')}</p>
       </div>
 
-      {/* By Position Summary */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Object.entries(posBuckets).map(([posId, arr]) => (
-          <div key={posId} className="bg-fpl-card border border-fpl-border rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-fpl-accent mb-2">{posLabels[posId]} (10%+ owned)</h3>
+          <div key={posId} className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-fpl-accent mb-2">{posLabels[posId]} ({t('ownership.ownedThreshold', { pct: 10 })})</h3>
             <div className="space-y-1">
               {arr.slice(0, 5).map((p) => (
                 <div key={p.id} className="flex justify-between text-sm">
-                  <span className="text-white">{p.web_name}</span>
-                  <span className="text-gray-400">{p.selected_by_percent}%</span>
+                  <span className="text-gray-900 dark:text-white">{p.web_name}</span>
+                  <span className="text-gray-500 dark:text-gray-400">{p.selected_by_percent}%</span>
                 </div>
               ))}
             </div>
@@ -57,46 +57,44 @@ export default function OwnershipCombinationsPage() {
         ))}
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <select value={position} onChange={(e) => setPosition(e.target.value)} className="bg-fpl-dark border border-fpl-border rounded-lg px-3 py-2 text-sm text-white">
-          <option value="all">All Positions</option>
+        <select value={position} onChange={(e) => setPosition(e.target.value)} className="bg-gray-50 dark:bg-fpl-dark border border-fpl-light-border dark:border-fpl-border rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white">
+          <option value="all">{t('players.allPositions')}</option>
           {elementTypes?.map((et) => (<option key={et.id} value={et.id}>{et.singular_name}</option>))}
         </select>
-        <select value={minOwnership} onChange={(e) => setMinOwnership(Number(e.target.value))} className="bg-fpl-dark border border-fpl-border rounded-lg px-3 py-2 text-sm text-white">
-          <option value={1}>1%+ owned</option>
-          <option value={5}>5%+ owned</option>
-          <option value={10}>10%+ owned</option>
-          <option value={20}>20%+ owned</option>
-          <option value={30}>30%+ owned</option>
+        <select value={minOwnership} onChange={(e) => setMinOwnership(Number(e.target.value))} className="bg-gray-50 dark:bg-fpl-dark border border-fpl-light-border dark:border-fpl-border rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white">
+          <option value={1}>{t('ownership.ownedThreshold', { pct: 1 })}</option>
+          <option value={5}>{t('ownership.ownedThreshold', { pct: 5 })}</option>
+          <option value={10}>{t('ownership.ownedThreshold', { pct: 10 })}</option>
+          <option value={20}>{t('ownership.ownedThreshold', { pct: 20 })}</option>
+          <option value={30}>{t('ownership.ownedThreshold', { pct: 30 })}</option>
         </select>
       </div>
 
-      {/* Full Table */}
-      <div className="bg-fpl-card border border-fpl-border rounded-lg overflow-hidden">
+      <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-gray-400 border-b border-fpl-border">
-                <th className="px-4 py-2 text-left">Player</th>
-                <th className="px-4 py-2 text-left">Team</th>
-                <th className="px-4 py-2">Pos</th>
-                <th className="px-4 py-2 text-right">Owned%</th>
-                <th className="px-4 py-2 text-right">Price</th>
-                <th className="px-4 py-2 text-right">Points</th>
-                <th className="px-4 py-2 text-right">Form</th>
+              <tr className="text-gray-500 dark:text-gray-400 border-b border-fpl-light-border dark:border-fpl-border">
+                <th className="px-4 py-2 text-left">{t('common.player')}</th>
+                <th className="px-4 py-2 text-left">{t('common.team')}</th>
+                <th className="px-4 py-2">{t('common.pos')}</th>
+                <th className="px-4 py-2 text-right">{t('common.owned')}</th>
+                <th className="px-4 py-2 text-right">{t('common.price')}</th>
+                <th className="px-4 py-2 text-right">{t('common.points')}</th>
+                <th className="px-4 py-2 text-right">{t('common.form')}</th>
               </tr>
             </thead>
             <tbody>
               {owned.slice(0, 50).map((p) => (
-                <tr key={p.id} className="border-b border-fpl-border/30">
-                  <td className="px-4 py-2 text-white font-medium">{p.web_name}</td>
-                  <td className="px-4 py-2 text-gray-400">{teamsMap?.[p.team]?.short_name}</td>
-                  <td className="px-4 py-2 text-center text-gray-400">{posLabels[p.element_type]}</td>
+                <tr key={p.id} className="border-b border-fpl-light-border/30 dark:border-fpl-border/30">
+                  <td className="px-4 py-2 text-gray-900 dark:text-white font-medium">{p.web_name}</td>
+                  <td className="px-4 py-2 text-gray-500 dark:text-gray-400">{teamsMap?.[p.team]?.short_name}</td>
+                  <td className="px-4 py-2 text-center text-gray-500 dark:text-gray-400">{posLabels[p.element_type]}</td>
                   <td className="px-4 py-2 text-right text-fpl-accent font-medium">{p.selected_by_percent}%</td>
-                  <td className="px-4 py-2 text-right text-gray-300">£{(p.now_cost / 10).toFixed(1)}</td>
-                  <td className="px-4 py-2 text-right text-white">{p.total_points}</td>
-                  <td className="px-4 py-2 text-right text-gray-300">{p.form}</td>
+                  <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300">£{(p.now_cost / 10).toFixed(1)}</td>
+                  <td className="px-4 py-2 text-right text-gray-900 dark:text-white">{p.total_points}</td>
+                  <td className="px-4 py-2 text-right text-gray-600 dark:text-gray-300">{p.form}</td>
                 </tr>
               ))}
             </tbody>
