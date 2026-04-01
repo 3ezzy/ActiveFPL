@@ -4,13 +4,36 @@
 
 body {
   margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Dark mode body colors */
+.dark body,
+html.dark body {
   background-color: #0f172a;
   color: #f1f5f9;
-  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Light mode body colors */
+body {
+  background-color: #f8fafc;
+  color: #1e293b;
 }
 
 #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* RTL support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* Touch-friendly targets */
+@layer base {
+  button, a, select, input {
+    min-height: 2.5rem;
+  }
 }
