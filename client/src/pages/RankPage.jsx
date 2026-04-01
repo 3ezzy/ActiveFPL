@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTeam } from '../context/TeamContext';
 import { useNavigate } from 'react-router-dom';
 import useBootstrap from '../hooks/useBootstrap';
@@ -25,9 +26,8 @@ const fmt = (n) => (n != null ? new Intl.NumberFormat().format(n) : '-');
 const posLabels = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' };
 const PL_BADGE_URL = 'https://resources.premierleague.com/premierleague/badges/70';
 
-/* ─── Reusable: Team Badge ─── */
 function TeamBadge({ team, size = 24 }) {
-  if (!team) return <div className="rounded-full bg-fpl-border shrink-0" style={{ width: size, height: size }} />;
+  if (!team) return <div className="rounded-full bg-gray-300 dark:bg-fpl-border shrink-0" style={{ width: size, height: size }} />;
   return (
     <img
       src={`${PL_BADGE_URL}/t${team.code}.png`}
@@ -39,7 +39,6 @@ function TeamBadge({ team, size = 24 }) {
   );
 }
 
-/* ─── Reusable: Player Jersey ─── */
 function PlayerJersey({ team, isGkp, size = 28 }) {
   if (!team) return null;
   const shirtType = isGkp ? `shirt_${team.code}_1` : `shirt_${team.code}`;
@@ -54,16 +53,16 @@ function PlayerJersey({ team, isGkp, size = 28 }) {
   );
 }
 
-const tabs = [
-  { key: 'summary', label: 'Summary', icon: HiClipboardDocumentList },
-  { key: 'squad', label: 'Squad', icon: HiUsers },
-  { key: 'captains', label: 'Captains', icon: HiStar },
-  { key: 'live', label: 'Live', icon: HiSignal },
-  { key: 'whatif', label: 'What-If', icon: HiQuestionMarkCircle },
-  { key: 'gains', label: 'Gains', icon: HiArrowTrendingUp },
-  { key: 'threats', label: 'Threats', icon: HiShieldExclamation },
-  { key: 'transfers', label: 'Transfers', icon: HiArrowsRightLeft },
-  { key: 'compare', label: 'Compare', icon: HiScale },
+const tabDefs = [
+  { key: 'summary', labelKey: 'rank.summary', icon: HiClipboardDocumentList },
+  { key: 'squad', labelKey: 'rank.squad', icon: HiUsers },
+  { key: 'captains', labelKey: 'rank.captains', icon: HiStar },
+  { key: 'live', labelKey: 'rank.live', icon: HiSignal },
+  { key: 'whatif', labelKey: 'rank.whatIf', icon: HiQuestionMarkCircle },
+  { key: 'gains', labelKey: 'rank.gains', icon: HiArrowTrendingUp },
+  { key: 'threats', labelKey: 'rank.threats', icon: HiShieldExclamation },
+  { key: 'transfers', labelKey: 'rank.transfers', icon: HiArrowsRightLeft },
+  { key: 'compare', labelKey: 'rank.compare', icon: HiScale },
 ];
 
 export default function RankPage() {
@@ -75,6 +74,7 @@ export default function RankPage() {
   const eventId = entry?.current_event || currentEvent?.id;
   const { picks, entryHistory, activeChip, loading: pLoading, error: pError } = usePicks(teamId, eventId);
   const { fixtures } = useFixtures();
+  const { t } = useTranslation();
 
   if (!teamId) {
     navigate('/');
@@ -90,13 +90,12 @@ export default function RankPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
             {entry.player_first_name} {entry.player_last_name}
           </h1>
-          <p className="text-gray-400">{entry.name} &middot; GW {eventId}</p>
+          <p className="text-gray-500 dark:text-gray-400">{entry.name} &middot; GW {eventId}</p>
         </div>
         <div className="flex gap-2">
           {activeChip && (
@@ -107,68 +106,47 @@ export default function RankPage() {
         </div>
       </div>
 
-      {/* Stat Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Overall Points" value={fmt(entry.summary_overall_points)} />
-        <StatCard label="Overall Rank" value={fmt(entry.summary_overall_rank)} />
-        <StatCard label="GW Points" value={fmt(entryHistory?.points ?? entry.summary_event_points)} />
-        <StatCard label="GW Rank" value={fmt(entryHistory?.rank ?? entry.summary_event_rank)} />
+        <StatCard label={t('common.overallPoints')} value={fmt(entry.summary_overall_points)} />
+        <StatCard label={t('common.overallRank')} value={fmt(entry.summary_overall_rank)} />
+        <StatCard label={t('common.gwPoints')} value={fmt(entryHistory?.points ?? entry.summary_event_points)} />
+        <StatCard label={t('common.gwRank')} value={fmt(entryHistory?.rank ?? entry.summary_event_rank)} />
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 overflow-x-auto pb-1 border-b border-fpl-border">
-        {tabs.map((tab) => (
+      <div className="flex gap-1 overflow-x-auto pb-1 border-b border-fpl-light-border dark:border-fpl-border">
+        {tabDefs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium whitespace-nowrap rounded-t-lg transition-colors ${
               activeTab === tab.key
-                ? 'bg-fpl-card text-fpl-accent border border-fpl-border border-b-fpl-card -mb-px'
-                : 'text-gray-400 hover:text-white'
+                ? 'bg-white dark:bg-fpl-card text-fpl-accent border border-fpl-light-border dark:border-fpl-border border-b-white dark:border-b-fpl-card -mb-px'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <tab.icon className="w-4 h-4" />
-            {tab.label}
+            {t(tab.labelKey)}
           </button>
         ))}
       </div>
 
-      {/* Tab Content */}
       <div>
-        {activeTab === 'summary' && (
-          <SummaryTab entry={entry} entryHistory={entryHistory} picks={picks} playersMap={playersMap} teamsMap={teamsMap} eventId={eventId} />
-        )}
-        {activeTab === 'squad' && (
-          <SquadTab picks={picks} playersMap={playersMap} teamsMap={teamsMap} eventId={eventId} />
-        )}
-        {activeTab === 'captains' && (
-          <CaptainsTab picks={picks} playersMap={playersMap} teamsMap={teamsMap} players={players} />
-        )}
-        {activeTab === 'live' && (
-          <LiveTab picks={picks} playersMap={playersMap} teamsMap={teamsMap} fixtures={fixtures} eventId={eventId} />
-        )}
-        {activeTab === 'whatif' && (
-          <WhatIfTab picks={picks} playersMap={playersMap} teamsMap={teamsMap} />
-        )}
-        {activeTab === 'gains' && (
-          <GainsTab picks={picks} playersMap={playersMap} teamsMap={teamsMap} players={players} />
-        )}
-        {activeTab === 'threats' && (
-          <ThreatsTab picks={picks} playersMap={playersMap} teamsMap={teamsMap} players={players} />
-        )}
-        {activeTab === 'transfers' && (
-          <TransfersTab entry={entry} entryHistory={entryHistory} />
-        )}
-        {activeTab === 'compare' && (
-          <CompareTab teamId={teamId} entry={entry} entryHistory={entryHistory} playersMap={playersMap} teamsMap={teamsMap} eventId={eventId} />
-        )}
+        {activeTab === 'summary' && <SummaryTab entry={entry} entryHistory={entryHistory} picks={picks} playersMap={playersMap} teamsMap={teamsMap} eventId={eventId} t={t} />}
+        {activeTab === 'squad' && <SquadTab picks={picks} playersMap={playersMap} teamsMap={teamsMap} eventId={eventId} t={t} />}
+        {activeTab === 'captains' && <CaptainsTab picks={picks} playersMap={playersMap} teamsMap={teamsMap} players={players} t={t} />}
+        {activeTab === 'live' && <LiveTab picks={picks} playersMap={playersMap} teamsMap={teamsMap} fixtures={fixtures} eventId={eventId} t={t} />}
+        {activeTab === 'whatif' && <WhatIfTab picks={picks} playersMap={playersMap} teamsMap={teamsMap} t={t} />}
+        {activeTab === 'gains' && <GainsTab picks={picks} playersMap={playersMap} teamsMap={teamsMap} players={players} t={t} />}
+        {activeTab === 'threats' && <ThreatsTab picks={picks} playersMap={playersMap} teamsMap={teamsMap} players={players} t={t} />}
+        {activeTab === 'transfers' && <TransfersTab entry={entry} entryHistory={entryHistory} t={t} />}
+        {activeTab === 'compare' && <CompareTab teamId={teamId} entry={entry} entryHistory={entryHistory} playersMap={playersMap} teamsMap={teamsMap} eventId={eventId} t={t} />}
       </div>
     </div>
   );
 }
 
 /* ──────── SUMMARY TAB ──────── */
-function SummaryTab({ entry, entryHistory, picks, playersMap, teamsMap }) {
+function SummaryTab({ entry, entryHistory, picks, playersMap, teamsMap, t }) {
   const startingXI = picks?.filter((p) => p.position <= 11) || [];
   const bench = picks?.filter((p) => p.position > 11) || [];
   const captain = picks?.find((p) => p.is_captain);
@@ -176,39 +154,37 @@ function SummaryTab({ entry, entryHistory, picks, playersMap, teamsMap }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      {/* Key Info */}
-      <div className="bg-fpl-card border border-fpl-border rounded-xl p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Overview</h3>
+      <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl p-5 space-y-4">
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('rank.overview')}</h3>
         <div className="space-y-3">
           {[
-            ['Team Value', `\u00A3${((entryHistory?.value || entry.last_deadline_value || 0) / 10).toFixed(1)}m`],
-            ['Bank', `\u00A3${((entryHistory?.bank ?? entry.last_deadline_bank ?? 0) / 10).toFixed(1)}m`],
-            ['Captain', captainPlayer ? `${captainPlayer.web_name} (${captainPlayer.event_points * 2} pts)` : '-'],
-            ['GW Transfers', entryHistory?.event_transfers ?? '-'],
-            ['Transfer Cost', entryHistory?.event_transfers_cost ? `-${entryHistory.event_transfers_cost} pts` : '0'],
-            ['Bench Points', entryHistory?.points_on_bench ?? '-'],
-            ['Total Transfers', entry.last_deadline_total_transfers ?? '-'],
+            [t('rank.teamValue'), `\u00A3${((entryHistory?.value || entry.last_deadline_value || 0) / 10).toFixed(1)}m`],
+            [t('rank.bank'), `\u00A3${((entryHistory?.bank ?? entry.last_deadline_bank ?? 0) / 10).toFixed(1)}m`],
+            [t('rank.captain'), captainPlayer ? `${captainPlayer.web_name} (${captainPlayer.event_points * 2} pts)` : '-'],
+            [t('rank.gwTransfers'), entryHistory?.event_transfers ?? '-'],
+            [t('rank.transferCost'), entryHistory?.event_transfers_cost ? `-${entryHistory.event_transfers_cost} pts` : '0'],
+            [t('rank.benchPoints'), entryHistory?.points_on_bench ?? '-'],
+            [t('rank.totalTransfers'), entry.last_deadline_total_transfers ?? '-'],
           ].map(([label, val]) => (
             <div key={label} className="flex justify-between">
-              <span className="text-gray-400 text-sm">{label}</span>
-              <span className="text-white text-sm font-medium">{val}</span>
+              <span className="text-gray-500 dark:text-gray-400 text-sm">{label}</span>
+              <span className="text-gray-900 dark:text-white text-sm font-medium">{val}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Formation */}
-      <div className="bg-fpl-card border border-fpl-border rounded-xl p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Formation</h3>
+      <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl p-5 space-y-4">
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('rank.formation')}</h3>
         {playersMap && picks && (
           <FormationView picks={startingXI} playersMap={playersMap} teamsMap={teamsMap} />
         )}
         {bench.length > 0 && playersMap && (
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="h-px flex-1 bg-fpl-border" />
-              <span className="text-[10px] text-gray-500 uppercase tracking-wider">Bench</span>
-              <div className="h-px flex-1 bg-fpl-border" />
+              <div className="h-px flex-1 bg-gray-200 dark:bg-fpl-border" />
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider">{t('rank.bench')}</span>
+              <div className="h-px flex-1 bg-gray-200 dark:bg-fpl-border" />
             </div>
             <div className="flex gap-4 flex-wrap justify-center">
               {bench.map((p) => {
@@ -219,8 +195,8 @@ function SummaryTab({ entry, entryHistory, picks, playersMap, teamsMap }) {
                 return (
                   <div key={p.element} className="text-center opacity-60">
                     <PlayerJersey team={team} isGkp={isGkp} size={24} />
-                    <p className="text-[11px] text-gray-400 mt-0.5">{player?.web_name}</p>
-                    <p className="text-xs text-white font-medium">{pts}</p>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{player?.web_name}</p>
+                    <p className="text-xs text-gray-900 dark:text-white font-medium">{pts}</p>
                   </div>
                 );
               })}
@@ -232,7 +208,6 @@ function SummaryTab({ entry, entryHistory, picks, playersMap, teamsMap }) {
   );
 }
 
-/* ─── Formation: pitch-style layout with jerseys ─── */
 function FormationView({ picks, playersMap, teamsMap }) {
   const rows = { GKP: [], DEF: [], MID: [], FWD: [] };
   picks.forEach((p) => {
@@ -244,7 +219,6 @@ function FormationView({ picks, playersMap, teamsMap }) {
 
   return (
     <div className="relative bg-gradient-to-b from-green-900/20 via-green-800/10 to-green-900/20 rounded-xl p-4 space-y-5 border border-green-900/30">
-      {/* Pitch lines */}
       <div className="absolute inset-x-6 top-1/2 h-px bg-white/5" />
       <div className="absolute inset-x-[30%] top-[15%] bottom-[15%] border border-white/5 rounded-lg" />
 
@@ -254,15 +228,13 @@ function FormationView({ picks, playersMap, teamsMap }) {
             const team = teamsMap?.[player.team];
             const isGkp = player.element_type === 1;
             const pts = player.event_points != null ? player.event_points * player.multiplier : 0;
-            const ptsColor = pts >= 10 ? 'text-fpl-green' : pts >= 5 ? 'text-fpl-accent' : pts > 0 ? 'text-white' : 'text-gray-400';
-            const ptsBg = pts >= 10 ? 'bg-fpl-green/20' : pts >= 5 ? 'bg-fpl-accent/20' : pts > 0 ? 'bg-white/10' : 'bg-fpl-card';
+            const ptsColor = pts >= 10 ? 'text-fpl-green' : pts >= 5 ? 'text-fpl-accent' : pts > 0 ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400';
+            const ptsBg = pts >= 10 ? 'bg-fpl-green/20' : pts >= 5 ? 'bg-fpl-accent/20' : pts > 0 ? 'bg-gray-200/50 dark:bg-white/10' : 'bg-gray-100 dark:bg-fpl-card';
 
             return (
               <div key={player.id} className="text-center w-[68px] group">
-                {/* Jersey */}
                 <div className="relative mx-auto w-10 h-12 flex items-center justify-center">
                   <PlayerJersey team={team} isGkp={isGkp} size={36} />
-                  {/* Captain / VC badge */}
                   {player.is_captain && (
                     <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-fpl-accent text-fpl-dark text-[9px] font-black flex items-center justify-center shadow-lg">C</span>
                   )}
@@ -270,13 +242,11 @@ function FormationView({ picks, playersMap, teamsMap }) {
                     <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gray-600 text-white text-[9px] font-black flex items-center justify-center">V</span>
                   )}
                 </div>
-                {/* Points pill */}
                 <div className={`mx-auto mt-1 w-8 h-5 rounded-md flex items-center justify-center text-[11px] font-bold ${ptsBg} ${ptsColor}`}>
                   {pts}
                 </div>
-                {/* Name */}
-                <p className="text-[10px] text-white font-medium mt-0.5 truncate leading-tight">{player.web_name}</p>
-                <p className="text-[9px] text-gray-500">{team?.short_name}</p>
+                <p className="text-[10px] text-gray-900 dark:text-white font-medium mt-0.5 truncate leading-tight">{player.web_name}</p>
+                <p className="text-[9px] text-gray-400 dark:text-gray-500">{team?.short_name}</p>
               </div>
             );
           })}
@@ -287,24 +257,24 @@ function FormationView({ picks, playersMap, teamsMap }) {
 }
 
 /* ──────── SQUAD TAB ──────── */
-function SquadTab({ picks, playersMap, teamsMap, eventId }) {
-  if (!picks || !playersMap) return <p className="text-gray-500">No squad data available.</p>;
+function SquadTab({ picks, playersMap, teamsMap, eventId, t }) {
+  if (!picks || !playersMap) return <p className="text-gray-400 dark:text-gray-500">No squad data available.</p>;
   return (
-    <div className="bg-fpl-card border border-fpl-border rounded-xl overflow-hidden">
-      <h3 className="text-lg font-semibold text-white px-4 py-3 border-b border-fpl-border">
-        GW {eventId} Squad
+    <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl overflow-hidden">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white px-4 py-3 border-b border-fpl-light-border dark:border-fpl-border">
+        GW {eventId} {t('rank.squad')}
       </h3>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-gray-400 text-left border-b border-fpl-border text-xs uppercase tracking-wider">
+            <tr className="text-gray-500 dark:text-gray-400 text-left border-b border-fpl-light-border dark:border-fpl-border text-xs uppercase tracking-wider">
               <th className="px-4 py-2.5">#</th>
-              <th className="px-4 py-2.5">Player</th>
-              <th className="px-4 py-2.5">Pos</th>
-              <th className="px-4 py-2.5">Team</th>
-              <th className="px-4 py-2.5 text-right">Price</th>
-              <th className="px-4 py-2.5 text-right">Owned%</th>
-              <th className="px-4 py-2.5 text-right">Pts</th>
+              <th className="px-4 py-2.5">{t('common.player')}</th>
+              <th className="px-4 py-2.5">{t('common.pos')}</th>
+              <th className="px-4 py-2.5">{t('common.team')}</th>
+              <th className="px-4 py-2.5 text-right">{t('common.price')}</th>
+              <th className="px-4 py-2.5 text-right hidden sm:table-cell">{t('common.owned')}</th>
+              <th className="px-4 py-2.5 text-right">{t('common.pts')}</th>
             </tr>
           </thead>
           <tbody>
@@ -315,31 +285,31 @@ function SquadTab({ picks, playersMap, teamsMap, eventId }) {
               const isGkp = player?.element_type === 1;
               const pts = player?.event_points != null ? player.event_points * pick.multiplier : 0;
               return (
-                <tr key={pick.element} className={`border-b border-fpl-border/50 transition-colors hover:bg-white/[0.02] ${isBench ? 'opacity-50' : ''}`}>
-                  <td className="px-4 py-2.5 text-gray-500">{pick.position}</td>
+                <tr key={pick.element} className={`border-b border-fpl-light-border/30 dark:border-fpl-border/50 transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02] ${isBench ? 'opacity-50' : ''}`}>
+                  <td className="px-4 py-2.5 text-gray-400 dark:text-gray-500">{pick.position}</td>
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-2.5">
                       <PlayerJersey team={team} isGkp={isGkp} size={22} />
-                      <span className="text-white font-medium">{player?.web_name || '?'}</span>
+                      <span className="text-gray-900 dark:text-white font-medium">{player?.web_name || '?'}</span>
                       {pick.is_captain && (
                         <span className="text-[10px] bg-fpl-accent/20 text-fpl-accent px-1.5 py-0.5 rounded font-bold">C</span>
                       )}
                       {pick.is_vice_captain && (
-                        <span className="text-[10px] bg-gray-600/40 text-gray-300 px-1.5 py-0.5 rounded font-bold">V</span>
+                        <span className="text-[10px] bg-gray-400/20 dark:bg-gray-600/40 text-gray-600 dark:text-gray-300 px-1.5 py-0.5 rounded font-bold">V</span>
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-400">{posLabels[player?.element_type] || '-'}</td>
+                  <td className="px-4 py-2.5 text-gray-500 dark:text-gray-400">{posLabels[player?.element_type] || '-'}</td>
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-1.5">
                       <TeamBadge team={team} size={18} />
-                      <span className="text-gray-400">{team?.short_name || '-'}</span>
+                      <span className="text-gray-500 dark:text-gray-400">{team?.short_name || '-'}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-2.5 text-right text-gray-300">{player ? `\u00A3${(player.now_cost / 10).toFixed(1)}` : '-'}</td>
-                  <td className="px-4 py-2.5 text-right text-gray-300">{player?.selected_by_percent ?? '-'}%</td>
+                  <td className="px-4 py-2.5 text-right text-gray-600 dark:text-gray-300">{player ? `\u00A3${(player.now_cost / 10).toFixed(1)}` : '-'}</td>
+                  <td className="px-4 py-2.5 text-right text-gray-600 dark:text-gray-300 hidden sm:table-cell">{player?.selected_by_percent ?? '-'}%</td>
                   <td className="px-4 py-2.5 text-right">
-                    <span className={`font-semibold ${pts >= 10 ? 'text-fpl-green' : pts >= 5 ? 'text-fpl-accent' : pts > 0 ? 'text-white' : 'text-gray-400'}`}>
+                    <span className={`font-semibold ${pts >= 10 ? 'text-fpl-green' : pts >= 5 ? 'text-fpl-accent' : pts > 0 ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       {pts}
                     </span>
                   </td>
@@ -354,7 +324,7 @@ function SquadTab({ picks, playersMap, teamsMap, eventId }) {
 }
 
 /* ──────── CAPTAINS TAB ──────── */
-function CaptainsTab({ picks, playersMap, teamsMap, players }) {
+function CaptainsTab({ picks, playersMap, teamsMap, players, t }) {
   const captain = picks?.find((p) => p.is_captain);
   const viceCaptain = picks?.find((p) => p.is_vice_captain);
   const captainPlayer = captain ? playersMap?.[captain.element] : null;
@@ -372,9 +342,8 @@ function CaptainsTab({ picks, playersMap, teamsMap, players }) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
-        {/* Your Captain */}
-        <div className="bg-fpl-card border border-fpl-accent/30 rounded-xl p-5">
-          <p className="text-xs text-fpl-accent uppercase tracking-wide mb-4">Your Captain</p>
+        <div className="bg-white dark:bg-fpl-card border border-fpl-accent/30 rounded-xl p-5">
+          <p className="text-xs text-fpl-accent uppercase tracking-wide mb-4">{t('rank.yourCaptain')}</p>
           {captainPlayer ? (
             <div className="flex items-start gap-4">
               <div className="relative shrink-0">
@@ -384,27 +353,26 @@ function CaptainsTab({ picks, playersMap, teamsMap, players }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <TeamBadge team={captainTeam} size={20} />
-                  <p className="text-xl font-bold text-white truncate">{captainPlayer.web_name}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white truncate">{captainPlayer.web_name}</p>
                 </div>
-                <p className="text-sm text-gray-400">{captainTeam?.name}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{captainTeam?.name}</p>
                 <div className="mt-3 flex gap-6">
                   <div>
                     <p className="text-2xl font-bold text-fpl-accent">{(captainPlayer.event_points || 0) * 2}</p>
-                    <p className="text-[10px] text-gray-500 uppercase">GW Points (2x)</p>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase">{t('rank.gwPoints2x')}</p>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-white">{captainPlayer.total_points}</p>
-                    <p className="text-[10px] text-gray-500 uppercase">Season Total</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{captainPlayer.total_points}</p>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase">{t('rank.seasonTotal')}</p>
                   </div>
                 </div>
               </div>
             </div>
-          ) : <p className="text-gray-500">-</p>}
+          ) : <p className="text-gray-400 dark:text-gray-500">-</p>}
         </div>
 
-        {/* Vice Captain */}
-        <div className="bg-fpl-card border border-fpl-border rounded-xl p-5">
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-4">Vice Captain</p>
+        <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl p-5">
+          <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">{t('rank.viceCaptain')}</p>
           {vicePlayer ? (
             <div className="flex items-start gap-4">
               <div className="relative shrink-0">
@@ -414,54 +382,53 @@ function CaptainsTab({ picks, playersMap, teamsMap, players }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <TeamBadge team={viceTeam} size={20} />
-                  <p className="text-xl font-bold text-white truncate">{vicePlayer.web_name}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white truncate">{vicePlayer.web_name}</p>
                 </div>
-                <p className="text-sm text-gray-400">{viceTeam?.name}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{viceTeam?.name}</p>
                 <div className="mt-3">
-                  <p className="text-2xl font-bold text-white">{vicePlayer.event_points ?? '-'}</p>
-                  <p className="text-[10px] text-gray-500 uppercase">GW Points</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{vicePlayer.event_points ?? '-'}</p>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase">{t('common.gwPoints')}</p>
                 </div>
               </div>
             </div>
-          ) : <p className="text-gray-500">-</p>}
+          ) : <p className="text-gray-400 dark:text-gray-500">-</p>}
         </div>
       </div>
 
-      {/* Popular Captains */}
-      <div className="bg-fpl-card border border-fpl-border rounded-xl overflow-hidden">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide px-4 py-3 border-b border-fpl-border">
-          Most Popular Picks (by ownership)
+      <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl overflow-hidden">
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-4 py-3 border-b border-fpl-light-border dark:border-fpl-border">
+          {t('rank.mostPopularPicks')}
         </h3>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-gray-400 border-b border-fpl-border text-xs uppercase tracking-wider">
-              <th className="px-4 py-2.5 text-left">Player</th>
-              <th className="px-4 py-2.5 text-left">Team</th>
-              <th className="px-4 py-2.5 text-right">Owned%</th>
-              <th className="px-4 py-2.5 text-right">GW Pts</th>
-              <th className="px-4 py-2.5 text-right">Total Pts</th>
+            <tr className="text-gray-500 dark:text-gray-400 border-b border-fpl-light-border dark:border-fpl-border text-xs uppercase tracking-wider">
+              <th className="px-4 py-2.5 text-left">{t('common.player')}</th>
+              <th className="px-4 py-2.5 text-left">{t('common.team')}</th>
+              <th className="px-4 py-2.5 text-right">{t('common.owned')}</th>
+              <th className="px-4 py-2.5 text-right">{t('common.gwPts')}</th>
+              <th className="px-4 py-2.5 text-right">{t('common.totalPts')}</th>
             </tr>
           </thead>
           <tbody>
             {topCaptainPicks.map((p) => {
               const team = teamsMap?.[p.team];
               return (
-                <tr key={p.id} className="border-b border-fpl-border/30 hover:bg-white/[0.02] transition-colors">
+                <tr key={p.id} className="border-b border-fpl-light-border/30 dark:border-fpl-border/30 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-2.5">
                       <PlayerJersey team={team} isGkp={p.element_type === 1} size={22} />
-                      <span className="text-white font-medium">{p.web_name}</span>
+                      <span className="text-gray-900 dark:text-white font-medium">{p.web_name}</span>
                     </div>
                   </td>
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-1.5">
                       <TeamBadge team={team} size={18} />
-                      <span className="text-gray-400">{team?.short_name}</span>
+                      <span className="text-gray-500 dark:text-gray-400">{team?.short_name}</span>
                     </div>
                   </td>
                   <td className="px-4 py-2.5 text-right text-fpl-accent font-medium">{p.selected_by_percent}%</td>
-                  <td className="px-4 py-2.5 text-right text-white font-medium">{p.event_points ?? '-'}</td>
-                  <td className="px-4 py-2.5 text-right text-gray-300">{p.total_points}</td>
+                  <td className="px-4 py-2.5 text-right text-gray-900 dark:text-white font-medium">{p.event_points ?? '-'}</td>
+                  <td className="px-4 py-2.5 text-right text-gray-600 dark:text-gray-300">{p.total_points}</td>
                 </tr>
               );
             })}
@@ -473,7 +440,7 @@ function CaptainsTab({ picks, playersMap, teamsMap, players }) {
 }
 
 /* ──────── LIVE TAB ──────── */
-function LiveTab({ picks, playersMap, teamsMap, fixtures, eventId }) {
+function LiveTab({ picks, playersMap, teamsMap, fixtures, eventId, t }) {
   const liveFixtures = useMemo(
     () => (fixtures || []).filter((f) => f.event === eventId),
     [fixtures, eventId]
@@ -486,39 +453,32 @@ function LiveTab({ picks, playersMap, teamsMap, fixtures, eventId }) {
       const fixture = liveFixtures.find(
         (f) => f.team_h === player?.team || f.team_a === player?.team
       );
-      return {
-        ...p,
-        player,
-        fixture,
-        isPlaying: fixture?.started && !fixture?.finished,
-        hasPlayed: fixture?.finished,
-      };
+      return { ...p, player, fixture, isPlaying: fixture?.started && !fixture?.finished, hasPlayed: fixture?.finished };
     });
   }, [picks, playersMap, liveFixtures]);
 
   return (
     <div className="space-y-4">
-      {/* Match cards with team logos */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {liveFixtures.map((f) => {
           const home = teamsMap?.[f.team_h];
           const away = teamsMap?.[f.team_a];
           const isLive = f.started && !f.finished;
           return (
-            <div key={f.id} className={`bg-fpl-card border rounded-xl p-4 ${isLive ? 'border-fpl-green/50 shadow-lg shadow-fpl-green/5' : 'border-fpl-border'}`}>
+            <div key={f.id} className={`bg-white dark:bg-fpl-card border rounded-xl p-4 ${isLive ? 'border-fpl-green/50 shadow-lg shadow-fpl-green/5' : 'border-fpl-light-border dark:border-fpl-border'}`}>
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <TeamBadge team={home} size={28} />
-                  <span className="text-white text-sm font-semibold truncate">{home?.short_name}</span>
+                  <span className="text-gray-900 dark:text-white text-sm font-semibold truncate">{home?.short_name}</span>
                 </div>
                 <div className="text-center px-3">
-                  <span className="text-white font-bold text-lg">{f.team_h_score ?? 0} - {f.team_a_score ?? 0}</span>
+                  <span className="text-gray-900 dark:text-white font-bold text-lg">{f.team_h_score ?? 0} - {f.team_a_score ?? 0}</span>
                   {isLive && <p className="text-[10px] text-fpl-green font-semibold animate-pulse">{f.minutes}'</p>}
-                  {f.finished && <p className="text-[10px] text-gray-500">FT</p>}
-                  {!f.started && <p className="text-[10px] text-gray-500">-</p>}
+                  {f.finished && <p className="text-[10px] text-gray-400 dark:text-gray-500">{t('common.ft')}</p>}
+                  {!f.started && <p className="text-[10px] text-gray-400 dark:text-gray-500">-</p>}
                 </div>
                 <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-                  <span className="text-white text-sm font-semibold truncate">{away?.short_name}</span>
+                  <span className="text-gray-900 dark:text-white text-sm font-semibold truncate">{away?.short_name}</span>
                   <TeamBadge team={away} size={28} />
                 </div>
               </div>
@@ -527,16 +487,15 @@ function LiveTab({ picks, playersMap, teamsMap, fixtures, eventId }) {
         })}
       </div>
 
-      {/* Your Players with jerseys */}
-      <div className="bg-fpl-card border border-fpl-border rounded-xl overflow-hidden">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase px-4 py-3 border-b border-fpl-border">Your Players — Live Status</h3>
+      <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl overflow-hidden">
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase px-4 py-3 border-b border-fpl-light-border dark:border-fpl-border">{t('rank.liveStatus')}</h3>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-gray-400 border-b border-fpl-border text-xs uppercase tracking-wider">
-              <th className="px-4 py-2.5 text-left">Player</th>
-              <th className="px-4 py-2.5 text-left">Match</th>
+            <tr className="text-gray-500 dark:text-gray-400 border-b border-fpl-light-border dark:border-fpl-border text-xs uppercase tracking-wider">
+              <th className="px-4 py-2.5 text-left">{t('common.player')}</th>
+              <th className="px-4 py-2.5 text-left hidden sm:table-cell">Match</th>
               <th className="px-4 py-2.5 text-center">Status</th>
-              <th className="px-4 py-2.5 text-right">Pts</th>
+              <th className="px-4 py-2.5 text-right">{t('common.pts')}</th>
             </tr>
           </thead>
           <tbody>
@@ -549,39 +508,39 @@ function LiveTab({ picks, playersMap, teamsMap, fixtures, eventId }) {
               const awayTeam = fixture ? teamsMap?.[fixture.team_a] : null;
 
               return (
-                <tr key={p.element} className="border-b border-fpl-border/30 hover:bg-white/[0.02] transition-colors">
+                <tr key={p.element} className="border-b border-fpl-light-border/30 dark:border-fpl-border/30 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-2.5">
                       <PlayerJersey team={team} isGkp={isGkp} size={22} />
                       <div className="min-w-0">
                         <div className="flex items-center gap-1">
-                          <span className="text-white font-medium truncate">{p.player?.web_name}</span>
+                          <span className="text-gray-900 dark:text-white font-medium truncate">{p.player?.web_name}</span>
                           {p.is_captain && <span className="text-[9px] bg-fpl-accent/20 text-fpl-accent px-1 rounded font-bold">C</span>}
                         </div>
-                        <p className="text-[10px] text-gray-500">{posLabels[p.player?.element_type]}</p>
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500">{posLabels[p.player?.element_type]}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-2.5">
+                  <td className="px-4 py-2.5 hidden sm:table-cell">
                     {fixture ? (
-                      <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                      <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                         <TeamBadge team={homeTeam} size={16} />
                         <span>{homeTeam?.short_name}</span>
-                        <span className="text-white font-medium">{fixture.team_h_score ?? 0}-{fixture.team_a_score ?? 0}</span>
+                        <span className="text-gray-900 dark:text-white font-medium">{fixture.team_h_score ?? 0}-{fixture.team_a_score ?? 0}</span>
                         <span>{awayTeam?.short_name}</span>
                         <TeamBadge team={awayTeam} size={16} />
                       </div>
                     ) : (
-                      <span className="text-gray-500 text-xs">-</span>
+                      <span className="text-gray-400 dark:text-gray-500 text-xs">-</span>
                     )}
                   </td>
                   <td className="px-4 py-2.5 text-center">
-                    {p.isPlaying && <span className="text-[10px] bg-fpl-green/20 text-fpl-green px-2 py-0.5 rounded-full font-medium">Playing</span>}
-                    {p.hasPlayed && <span className="text-[10px] bg-gray-600/30 text-gray-400 px-2 py-0.5 rounded-full">Finished</span>}
-                    {!p.isPlaying && !p.hasPlayed && <span className="text-[10px] bg-fpl-yellow/20 text-fpl-yellow px-2 py-0.5 rounded-full">Upcoming</span>}
+                    {p.isPlaying && <span className="text-[10px] bg-fpl-green/20 text-fpl-green px-2 py-0.5 rounded-full font-medium">{t('rank.playing')}</span>}
+                    {p.hasPlayed && <span className="text-[10px] bg-gray-200/50 dark:bg-gray-600/30 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">{t('rank.finished')}</span>}
+                    {!p.isPlaying && !p.hasPlayed && <span className="text-[10px] bg-fpl-yellow/20 text-fpl-yellow px-2 py-0.5 rounded-full">{t('rank.upcoming')}</span>}
                   </td>
                   <td className="px-4 py-2.5 text-right">
-                    <span className={`font-bold ${pts >= 10 ? 'text-fpl-green' : pts >= 5 ? 'text-fpl-accent' : pts > 0 ? 'text-white' : 'text-gray-400'}`}>
+                    <span className={`font-bold ${pts >= 10 ? 'text-fpl-green' : pts >= 5 ? 'text-fpl-accent' : pts > 0 ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       {pts}
                     </span>
                   </td>
@@ -596,7 +555,7 @@ function LiveTab({ picks, playersMap, teamsMap, fixtures, eventId }) {
 }
 
 /* ──────── WHAT-IF TAB ──────── */
-function WhatIfTab({ picks, playersMap, teamsMap }) {
+function WhatIfTab({ picks, playersMap, teamsMap, t }) {
   const [altCaptain, setAltCaptain] = useState(null);
 
   const startingPicks = picks?.filter((p) => p.position <= 11) || [];
@@ -626,16 +585,16 @@ function WhatIfTab({ picks, playersMap, teamsMap }) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-fpl-card border border-fpl-border rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
-          What if you captained someone else?
+      <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+          {t('rank.whatIfTitle')}
         </h3>
         <select
           value={altCaptain || ''}
           onChange={(e) => setAltCaptain(Number(e.target.value))}
-          className="bg-fpl-dark border border-fpl-border rounded-lg px-3 py-2 text-sm text-white w-full max-w-xs"
+          className="bg-gray-50 dark:bg-fpl-dark border border-fpl-light-border dark:border-fpl-border rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white w-full max-w-xs"
         >
-          <option value="">Select alternative captain...</option>
+          <option value="">{t('rank.selectAltCaptain')}</option>
           {startingPicks.map((p) => {
             const player = playersMap?.[p.element];
             return (
@@ -648,26 +607,26 @@ function WhatIfTab({ picks, playersMap, teamsMap }) {
 
         {altPoints != null && (
           <div className="mt-5 grid grid-cols-3 gap-4">
-            <div className="bg-fpl-dark/50 rounded-xl p-4 text-center">
+            <div className="bg-gray-50 dark:bg-fpl-dark/50 rounded-xl p-4 text-center">
               <div className="flex justify-center gap-2 items-center mb-2">
                 <PlayerJersey team={currentCaptainTeam} isGkp={currentCaptainPlayer?.element_type === 1} size={28} />
                 <TeamBadge team={currentCaptainTeam} size={18} />
               </div>
-              <p className="text-xs text-gray-500 mb-1">Current</p>
-              <p className="text-xl font-bold text-white">{currentPoints}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{currentCaptainPlayer?.web_name} (C)</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{t('rank.current')}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{currentPoints}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{currentCaptainPlayer?.web_name} (C)</p>
             </div>
-            <div className="bg-fpl-dark/50 rounded-xl p-4 text-center">
+            <div className="bg-gray-50 dark:bg-fpl-dark/50 rounded-xl p-4 text-center">
               <div className="flex justify-center gap-2 items-center mb-2">
                 <PlayerJersey team={altTeam} isGkp={altPlayer?.element_type === 1} size={28} />
                 <TeamBadge team={altTeam} size={18} />
               </div>
-              <p className="text-xs text-gray-500 mb-1">Alternative</p>
-              <p className="text-xl font-bold text-white">{altPoints}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{altPlayer?.web_name} (C)</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{t('rank.alternative')}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{altPoints}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{altPlayer?.web_name} (C)</p>
             </div>
-            <div className="bg-fpl-dark/50 rounded-xl p-4 text-center flex flex-col justify-center">
-              <p className="text-xs text-gray-500 mb-1">Difference</p>
+            <div className="bg-gray-50 dark:bg-fpl-dark/50 rounded-xl p-4 text-center flex flex-col justify-center">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{t('rank.difference')}</p>
               <p className={`text-2xl font-bold ${diff > 0 ? 'text-fpl-green' : diff < 0 ? 'text-fpl-red' : 'text-gray-400'}`}>
                 {diff > 0 ? `+${diff}` : diff}
               </p>
@@ -680,7 +639,7 @@ function WhatIfTab({ picks, playersMap, teamsMap }) {
 }
 
 /* ──────── GAINS TAB ──────── */
-function GainsTab({ picks, playersMap, teamsMap, players }) {
+function GainsTab({ picks, playersMap, teamsMap, players, t }) {
   const gains = useMemo(() => {
     if (!players || !picks) return [];
     const myIds = new Set(picks.map((p) => p.element));
@@ -691,40 +650,40 @@ function GainsTab({ picks, playersMap, teamsMap, players }) {
   }, [players, picks]);
 
   return (
-    <div className="bg-fpl-card border border-fpl-border rounded-xl overflow-hidden">
-      <h3 className="text-sm font-semibold text-gray-400 uppercase px-4 py-3 border-b border-fpl-border">
-        Top Performers You Don't Own
+    <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl overflow-hidden">
+      <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase px-4 py-3 border-b border-fpl-light-border dark:border-fpl-border">
+        {t('rank.topPerformers')}
       </h3>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-gray-400 border-b border-fpl-border text-xs uppercase tracking-wider">
-            <th className="px-4 py-2.5 text-left">Player</th>
-            <th className="px-4 py-2.5 text-left">Team</th>
-            <th className="px-4 py-2.5 text-right">Owned%</th>
-            <th className="px-4 py-2.5 text-right">GW Pts</th>
+          <tr className="text-gray-500 dark:text-gray-400 border-b border-fpl-light-border dark:border-fpl-border text-xs uppercase tracking-wider">
+            <th className="px-4 py-2.5 text-left">{t('common.player')}</th>
+            <th className="px-4 py-2.5 text-left">{t('common.team')}</th>
+            <th className="px-4 py-2.5 text-right">{t('common.owned')}</th>
+            <th className="px-4 py-2.5 text-right">{t('common.gwPts')}</th>
           </tr>
         </thead>
         <tbody>
           {gains.map((p) => {
             const team = teamsMap?.[p.team];
             return (
-              <tr key={p.id} className="border-b border-fpl-border/30 hover:bg-white/[0.02] transition-colors">
+              <tr key={p.id} className="border-b border-fpl-light-border/30 dark:border-fpl-border/30 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
                 <td className="px-4 py-2.5">
                   <div className="flex items-center gap-2.5">
                     <PlayerJersey team={team} isGkp={p.element_type === 1} size={22} />
                     <div className="min-w-0">
-                      <span className="text-white font-medium">{p.web_name}</span>
-                      <p className="text-[10px] text-gray-500">{posLabels[p.element_type]}</p>
+                      <span className="text-gray-900 dark:text-white font-medium">{p.web_name}</span>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500">{posLabels[p.element_type]}</p>
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-2.5">
                   <div className="flex items-center gap-1.5">
                     <TeamBadge team={team} size={18} />
-                    <span className="text-gray-400">{team?.short_name}</span>
+                    <span className="text-gray-500 dark:text-gray-400">{team?.short_name}</span>
                   </div>
                 </td>
-                <td className="px-4 py-2.5 text-right text-gray-300">{p.selected_by_percent}%</td>
+                <td className="px-4 py-2.5 text-right text-gray-600 dark:text-gray-300">{p.selected_by_percent}%</td>
                 <td className="px-4 py-2.5 text-right">
                   <span className="text-fpl-green font-bold">{p.event_points}</span>
                 </td>
@@ -738,7 +697,7 @@ function GainsTab({ picks, playersMap, teamsMap, players }) {
 }
 
 /* ──────── THREATS TAB ──────── */
-function ThreatsTab({ picks, playersMap, teamsMap, players }) {
+function ThreatsTab({ picks, playersMap, teamsMap, players, t }) {
   const threats = useMemo(() => {
     if (!players || !picks) return [];
     const myIds = new Set(picks.map((p) => p.element));
@@ -749,18 +708,18 @@ function ThreatsTab({ picks, playersMap, teamsMap, players }) {
   }, [players, picks]);
 
   return (
-    <div className="bg-fpl-card border border-fpl-border rounded-xl overflow-hidden">
-      <h3 className="text-sm font-semibold text-gray-400 uppercase px-4 py-3 border-b border-fpl-border">
-        Rank Threats — Highly Owned Players You Don't Have
+    <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl overflow-hidden">
+      <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase px-4 py-3 border-b border-fpl-light-border dark:border-fpl-border">
+        {t('rank.rankThreats')}
       </h3>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-gray-400 border-b border-fpl-border text-xs uppercase tracking-wider">
-            <th className="px-4 py-2.5 text-left">Player</th>
-            <th className="px-4 py-2.5 text-left">Team</th>
-            <th className="px-4 py-2.5 text-right">Owned%</th>
-            <th className="px-4 py-2.5 text-right">GW Pts</th>
-            <th className="px-4 py-2.5 text-right">Rank Impact</th>
+          <tr className="text-gray-500 dark:text-gray-400 border-b border-fpl-light-border dark:border-fpl-border text-xs uppercase tracking-wider">
+            <th className="px-4 py-2.5 text-left">{t('common.player')}</th>
+            <th className="px-4 py-2.5 text-left">{t('common.team')}</th>
+            <th className="px-4 py-2.5 text-right">{t('common.owned')}</th>
+            <th className="px-4 py-2.5 text-right">{t('common.gwPts')}</th>
+            <th className="px-4 py-2.5 text-right">{t('rank.rankImpact')}</th>
           </tr>
         </thead>
         <tbody>
@@ -768,24 +727,24 @@ function ThreatsTab({ picks, playersMap, teamsMap, players }) {
             const team = teamsMap?.[p.team];
             const impact = Math.round(parseFloat(p.selected_by_percent) * p.event_points / 10);
             return (
-              <tr key={p.id} className="border-b border-fpl-border/30 hover:bg-white/[0.02] transition-colors">
+              <tr key={p.id} className="border-b border-fpl-light-border/30 dark:border-fpl-border/30 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
                 <td className="px-4 py-2.5">
                   <div className="flex items-center gap-2.5">
                     <PlayerJersey team={team} isGkp={p.element_type === 1} size={22} />
                     <div className="min-w-0">
-                      <span className="text-white font-medium">{p.web_name}</span>
-                      <p className="text-[10px] text-gray-500">{posLabels[p.element_type]}</p>
+                      <span className="text-gray-900 dark:text-white font-medium">{p.web_name}</span>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500">{posLabels[p.element_type]}</p>
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-2.5">
                   <div className="flex items-center gap-1.5">
                     <TeamBadge team={team} size={18} />
-                    <span className="text-gray-400">{team?.short_name}</span>
+                    <span className="text-gray-500 dark:text-gray-400">{team?.short_name}</span>
                   </div>
                 </td>
                 <td className="px-4 py-2.5 text-right text-fpl-yellow font-medium">{p.selected_by_percent}%</td>
-                <td className="px-4 py-2.5 text-right text-white font-medium">{p.event_points}</td>
+                <td className="px-4 py-2.5 text-right text-gray-900 dark:text-white font-medium">{p.event_points}</td>
                 <td className="px-4 py-2.5 text-right">
                   <span className="text-fpl-red font-bold bg-fpl-red/10 px-2 py-0.5 rounded-full text-xs">-{impact}</span>
                 </td>
@@ -793,7 +752,7 @@ function ThreatsTab({ picks, playersMap, teamsMap, players }) {
             );
           })}
           {threats.length === 0 && (
-            <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-500">No significant threats this gameweek.</td></tr>
+            <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400 dark:text-gray-500">{t('rank.noThreats')}</td></tr>
           )}
         </tbody>
       </table>
@@ -802,48 +761,48 @@ function ThreatsTab({ picks, playersMap, teamsMap, players }) {
 }
 
 /* ──────── TRANSFERS TAB ──────── */
-function TransfersTab({ entry, entryHistory }) {
+function TransfersTab({ entry, entryHistory, t }) {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="GW Transfers" value={entryHistory?.event_transfers ?? '-'} />
-        <StatCard label="Transfer Cost" value={entryHistory?.event_transfers_cost ? `-${entryHistory.event_transfers_cost}` : '0'} />
-        <StatCard label="Total Transfers" value={entry.last_deadline_total_transfers ?? '-'} />
+        <StatCard label={t('rank.gwTransfersLabel')} value={entryHistory?.event_transfers ?? '-'} />
+        <StatCard label={t('rank.transferCost')} value={entryHistory?.event_transfers_cost ? `-${entryHistory.event_transfers_cost}` : '0'} />
+        <StatCard label={t('rank.totalTransfers')} value={entry.last_deadline_total_transfers ?? '-'} />
       </div>
 
-      <div className="bg-fpl-card border border-fpl-border rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Transfer Budget</h3>
+      <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">{t('rank.transferBudget')}</h3>
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-400">Team Value</span>
-            <span className="text-white">{'\u00A3'}{((entryHistory?.value || entry.last_deadline_value || 0) / 10).toFixed(1)}m</span>
+            <span className="text-gray-500 dark:text-gray-400">{t('rank.teamValue')}</span>
+            <span className="text-gray-900 dark:text-white">{'\u00A3'}{((entryHistory?.value || entry.last_deadline_value || 0) / 10).toFixed(1)}m</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-400">In the Bank</span>
+            <span className="text-gray-500 dark:text-gray-400">{t('rank.inTheBank')}</span>
             <span className="text-fpl-green">{'\u00A3'}{((entryHistory?.bank ?? entry.last_deadline_bank ?? 0) / 10).toFixed(1)}m</span>
           </div>
-          <div className="border-t border-fpl-border pt-2 flex justify-between text-sm font-medium">
-            <span className="text-gray-300">Selling Value</span>
-            <span className="text-white">
+          <div className="border-t border-fpl-light-border dark:border-fpl-border pt-2 flex justify-between text-sm font-medium">
+            <span className="text-gray-600 dark:text-gray-300">{t('rank.sellingValue')}</span>
+            <span className="text-gray-900 dark:text-white">
               {'\u00A3'}{(((entryHistory?.value || entry.last_deadline_value || 0) + (entryHistory?.bank ?? entry.last_deadline_bank ?? 0)) / 10).toFixed(1)}m
             </span>
           </div>
         </div>
       </div>
 
-      <div className="bg-fpl-card border border-fpl-border rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Chips Used</h3>
+      <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">{t('rank.chipsUsed')}</h3>
         {entry.chips?.length > 0 ? (
           <div className="space-y-2">
             {entry.chips.map((chip, i) => (
               <div key={i} className="flex justify-between text-sm">
-                <span className="text-white capitalize">{chip.name.replace('_', ' ')}</span>
-                <span className="text-gray-400">GW {chip.event}</span>
+                <span className="text-gray-900 dark:text-white capitalize">{chip.name.replace('_', ' ')}</span>
+                <span className="text-gray-500 dark:text-gray-400">GW {chip.event}</span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500">No chips used yet.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">{t('rank.noChips')}</p>
         )}
       </div>
     </div>
@@ -851,28 +810,24 @@ function TransfersTab({ entry, entryHistory }) {
 }
 
 /* ──────── COMPARE TAB ──────── */
-function CompareTab({ teamId, entry, entryHistory, playersMap, teamsMap, eventId }) {
+function CompareTab({ teamId, entry, entryHistory, playersMap, teamsMap, eventId, t }) {
   const [rivalId, setRivalId] = useState('');
   const { entry: rivalEntry, loading: rLoading, error: rError } = useEntry(rivalId || null);
   const { picks: rivalPicks, entryHistory: rivalHistory } = usePicks(rivalId || null, eventId);
   const { picks: myPicks } = usePicks(teamId, eventId);
-
-  const handleCompare = (e) => {
-    e.preventDefault();
-  };
 
   const myPickIds = new Set(myPicks?.map((p) => p.element) || []);
   const rivalPickIds = new Set(rivalPicks?.map((p) => p.element) || []);
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleCompare} className="flex gap-3">
+      <form onSubmit={(e) => e.preventDefault()} className="flex gap-3">
         <input
           type="text"
           value={rivalId}
           onChange={(e) => setRivalId(e.target.value.trim())}
-          placeholder="Enter rival's Team ID"
-          className="bg-fpl-dark border border-fpl-border rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 w-48"
+          placeholder={t('rank.enterRivalId')}
+          className="bg-gray-50 dark:bg-fpl-dark border border-fpl-light-border dark:border-fpl-border rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 w-48"
         />
       </form>
 
@@ -882,38 +837,38 @@ function CompareTab({ teamId, entry, entryHistory, playersMap, teamsMap, eventId
       {rivalEntry && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-fpl-card border border-fpl-accent/30 rounded-xl p-4 text-center">
-              <p className="text-xs text-fpl-accent uppercase mb-1">You</p>
-              <p className="text-lg font-bold text-white">{entry.name}</p>
+            <div className="bg-white dark:bg-fpl-card border border-fpl-accent/30 rounded-xl p-4 text-center">
+              <p className="text-xs text-fpl-accent uppercase mb-1">{t('rank.you')}</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">{entry.name}</p>
               <p className="text-2xl font-bold text-fpl-accent mt-2">{entryHistory?.points ?? entry.summary_event_points ?? '-'}</p>
-              <p className="text-xs text-gray-400">GW Points</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('common.gwPoints')}</p>
             </div>
-            <div className="bg-fpl-card border border-fpl-border rounded-xl p-4 text-center">
-              <p className="text-xs text-gray-400 uppercase mb-1">Rival</p>
-              <p className="text-lg font-bold text-white">{rivalEntry.name}</p>
-              <p className="text-2xl font-bold text-white mt-2">{rivalHistory?.points ?? rivalEntry.summary_event_points ?? '-'}</p>
-              <p className="text-xs text-gray-400">GW Points</p>
+            <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl p-4 text-center">
+              <p className="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1">{t('rank.rival')}</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">{rivalEntry.name}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">{rivalHistory?.points ?? rivalEntry.summary_event_points ?? '-'}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('common.gwPoints')}</p>
             </div>
           </div>
 
           {rivalPicks && playersMap && (
             <div className="grid gap-4 lg:grid-cols-2">
-              <div className="bg-fpl-card border border-fpl-border rounded-xl overflow-hidden">
-                <h3 className="text-sm font-semibold text-fpl-accent uppercase px-4 py-3 border-b border-fpl-border">
-                  Only You Own
+              <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl overflow-hidden">
+                <h3 className="text-sm font-semibold text-fpl-accent uppercase px-4 py-3 border-b border-fpl-light-border dark:border-fpl-border">
+                  {t('rank.onlyYouOwn')}
                 </h3>
-                <div className="divide-y divide-fpl-border/30">
+                <div className="divide-y divide-fpl-light-border/30 dark:divide-fpl-border/30">
                   {myPicks?.filter((p) => p.position <= 11 && !rivalPickIds.has(p.element)).map((p) => {
                     const player = playersMap[p.element];
                     const team = teamsMap?.[player?.team];
                     const pts = player?.event_points != null ? player.event_points * p.multiplier : 0;
                     return (
-                      <div key={p.element} className="flex items-center justify-between px-4 py-2.5 hover:bg-white/[0.02] transition-colors">
+                      <div key={p.element} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
                         <div className="flex items-center gap-2.5">
                           <PlayerJersey team={team} isGkp={player?.element_type === 1} size={22} />
-                          <span className="text-white text-sm font-medium">{player?.web_name}</span>
+                          <span className="text-gray-900 dark:text-white text-sm font-medium">{player?.web_name}</span>
                           <TeamBadge team={team} size={16} />
-                          <span className="text-[10px] text-gray-500">{team?.short_name}</span>
+                          <span className="text-[10px] text-gray-400 dark:text-gray-500">{team?.short_name}</span>
                         </div>
                         <span className={`text-sm font-bold ${pts > 0 ? 'text-fpl-green' : 'text-gray-400'}`}>{pts}</span>
                       </div>
@@ -921,22 +876,22 @@ function CompareTab({ teamId, entry, entryHistory, playersMap, teamsMap, eventId
                   })}
                 </div>
               </div>
-              <div className="bg-fpl-card border border-fpl-border rounded-xl overflow-hidden">
-                <h3 className="text-sm font-semibold text-fpl-red uppercase px-4 py-3 border-b border-fpl-border">
-                  Only Rival Owns
+              <div className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-xl overflow-hidden">
+                <h3 className="text-sm font-semibold text-fpl-red uppercase px-4 py-3 border-b border-fpl-light-border dark:border-fpl-border">
+                  {t('rank.onlyRivalOwns')}
                 </h3>
-                <div className="divide-y divide-fpl-border/30">
+                <div className="divide-y divide-fpl-light-border/30 dark:divide-fpl-border/30">
                   {rivalPicks?.filter((p) => p.position <= 11 && !myPickIds.has(p.element)).map((p) => {
                     const player = playersMap[p.element];
                     const team = teamsMap?.[player?.team];
                     const pts = player?.event_points != null ? player.event_points * p.multiplier : 0;
                     return (
-                      <div key={p.element} className="flex items-center justify-between px-4 py-2.5 hover:bg-white/[0.02] transition-colors">
+                      <div key={p.element} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
                         <div className="flex items-center gap-2.5">
                           <PlayerJersey team={team} isGkp={player?.element_type === 1} size={22} />
-                          <span className="text-white text-sm font-medium">{player?.web_name}</span>
+                          <span className="text-gray-900 dark:text-white text-sm font-medium">{player?.web_name}</span>
                           <TeamBadge team={team} size={16} />
-                          <span className="text-[10px] text-gray-500">{team?.short_name}</span>
+                          <span className="text-[10px] text-gray-400 dark:text-gray-500">{team?.short_name}</span>
                         </div>
                         <span className={`text-sm font-bold ${pts > 0 ? 'text-fpl-red' : 'text-gray-400'}`}>{pts}</span>
                       </div>
@@ -950,7 +905,7 @@ function CompareTab({ teamId, entry, entryHistory, playersMap, teamsMap, eventId
       )}
 
       {!rivalId && (
-        <p className="text-gray-500 text-center py-8">Enter a rival's Team ID above to compare squads.</p>
+        <p className="text-gray-400 dark:text-gray-500 text-center py-8">{t('rank.compareHint')}</p>
       )}
     </div>
   );
