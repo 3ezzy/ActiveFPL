@@ -106,22 +106,36 @@ export default function GamesPage() {
         </div>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto pb-2">
-        {gameweeks?.map((e) => (
-          <button
-            key={e.id}
-            onClick={() => setSelectedGw(e.id)}
-            className={`shrink-0 px-3 py-1.5 text-xs rounded-lg transition-colors ${
-              e.id === gw
-                ? 'bg-fpl-accent text-fpl-dark font-semibold'
-                : e.is_current
-                ? 'bg-fpl-accent/20 text-fpl-accent border border-fpl-accent/30'
-                : 'bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            GW{e.id}
-          </button>
-        ))}
+      <div className="flex items-center justify-center gap-3">
+        <button
+          onClick={() => setSelectedGw(Math.max(1, gw - 1))}
+          disabled={gw <= 1}
+          className="p-2 rounded-lg bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="Previous gameweek"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+        </button>
+
+        <select
+          value={gw}
+          onChange={(e) => setSelectedGw(Number(e.target.value))}
+          className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-lg px-4 py-2 text-sm font-semibold text-gray-900 dark:text-white text-center appearance-none cursor-pointer hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors min-w-[120px]"
+        >
+          {gameweeks?.map((e) => (
+            <option key={e.id} value={e.id}>
+              {t('common.gw')} {e.id}{e.is_current ? ` \u2022 ${t('common.live')}` : ''}
+            </option>
+          ))}
+        </select>
+
+        <button
+          onClick={() => setSelectedGw(Math.min(gameweeks?.length || 38, gw + 1))}
+          disabled={gw >= (gameweeks?.length || 38)}
+          className="p-2 rounded-lg bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="Next gameweek"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
