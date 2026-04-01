@@ -6,6 +6,21 @@ import Spinner from '../components/common/Spinner';
 import ErrorBanner from '../components/common/ErrorBanner';
 import DifficultyBadge from '../components/common/DifficultyBadge';
 
+const PL_BADGE_URL = 'https://resources.premierleague.com/premierleague/badges/70';
+
+function TeamBadge({ team, size = 24 }) {
+  if (!team) return <div className="rounded-full bg-gray-300 dark:bg-fpl-border shrink-0" style={{ width: size, height: size }} />;
+  return (
+    <img
+      src={`${PL_BADGE_URL}/t${team.code}.png`}
+      alt={team.short_name}
+      className="object-contain shrink-0"
+      style={{ width: size, height: size }}
+      onError={(e) => { e.target.style.display = 'none'; }}
+    />
+  );
+}
+
 export default function FixturesPage() {
   const { teams, teamsMap, currentEvent, gameweeks, loading: bLoading, error: bError } = useBootstrap();
   const { fixtures, loading: fLoading, error: fError } = useFixtures();
@@ -77,20 +92,36 @@ export default function FixturesPage() {
 
       {view === 'gw' && (
         <>
-          <div className="flex gap-1 overflow-x-auto pb-2">
-            {gameweeks?.map((e) => (
-              <button
-                key={e.id}
-                onClick={() => setSelectedGw(e.id)}
-                className={`shrink-0 px-3 py-1.5 text-xs rounded ${
-                  e.id === gw
-                    ? 'bg-fpl-accent text-fpl-dark font-semibold'
-                    : 'bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-              >
-                GW{e.id}
-              </button>
-            ))}
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={() => setSelectedGw(Math.max(1, gw - 1))}
+              disabled={gw <= 1}
+              className="p-2 rounded-lg bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              aria-label="Previous gameweek"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+            </button>
+
+            <select
+              value={gw}
+              onChange={(e) => setSelectedGw(Number(e.target.value))}
+              className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-lg px-4 py-2 text-sm font-semibold text-gray-900 dark:text-white text-center appearance-none cursor-pointer hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors min-w-[120px]"
+            >
+              {gameweeks?.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {t('common.gw')} {e.id}{e.is_current ? ` \u2022 ${t('common.live')}` : ''}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={() => setSelectedGw(Math.min(gameweeks?.length || 38, gw + 1))}
+              disabled={gw >= (gameweeks?.length || 38)}
+              className="p-2 rounded-lg bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              aria-label="Next gameweek"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+            </button>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -105,7 +136,8 @@ export default function FixturesPage() {
                   className="bg-white dark:bg-fpl-card border border-fpl-light-border dark:border-fpl-border rounded-lg p-4"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="text-center flex-1">
+                    <div className="flex flex-col items-center gap-1 flex-1">
+                      <TeamBadge team={home} size={28} />
                       <p className="text-gray-900 dark:text-white font-medium">{home?.short_name}</p>
                       <DifficultyBadge difficulty={f.team_h_difficulty} />
                     </div>
@@ -132,7 +164,8 @@ export default function FixturesPage() {
                         </span>
                       )}
                     </div>
-                    <div className="text-center flex-1">
+                    <div className="flex flex-col items-center gap-1 flex-1">
+                      <TeamBadge team={away} size={28} />
                       <p className="text-gray-900 dark:text-white font-medium">{away?.short_name}</p>
                       <DifficultyBadge difficulty={f.team_a_difficulty} />
                     </div>
@@ -161,7 +194,12 @@ export default function FixturesPage() {
             <tbody>
               {fdrData.teamRows.map(({ team: tm, cells }) => (
                 <tr key={tm.id} className="border-b border-fpl-light-border/30 dark:border-fpl-border/30">
-                  <td className="px-4 py-2 text-gray-900 dark:text-white font-medium">{tm.short_name}</td>
+                  <td className="px-4 py-2">
+                    <div className="flex items-center gap-2">
+                      <TeamBadge team={tm} size={18} />
+                      <span className="text-gray-900 dark:text-white font-medium">{tm.short_name}</span>
+                    </div>
+                  </td>
                   {cells.map((c, i) => (
                     <td key={i} className="px-1 py-1 text-center">
                       <DifficultyBadge
